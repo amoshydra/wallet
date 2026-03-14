@@ -10,6 +10,7 @@ interface CodeDisplayProps {
   onCodeTypeChange?: (codeType: CodeType) => void;
   showSelector?: boolean;
   standalone?: boolean;
+  fullWidth?: boolean;
 }
 
 type BarcodeFormat = "CODE128" | "CODE39" | "EAN13" | "EAN8" | "UPC" | "ITF14";
@@ -40,7 +41,7 @@ const FORMAT_MAP: Record<Exclude<CodeType, "qr">, BarcodeFormat> = {
   itf14: "ITF14",
 };
 
-export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChange, showSelector = true, standalone = false }: CodeDisplayProps) {
+export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChange, showSelector = true, standalone = false, fullWidth = false }: CodeDisplayProps) {
   const [selectedType, setSelectedType] = useState<CodeType>(codeType || DEFAULT_CODE_TYPE[cardType]);
 
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -52,9 +53,12 @@ export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChang
   };
 
   const isQR = selectedType === "qr";
+  const qrSize = fullWidth ? 280 : 180;
+  const barcodeWidth = fullWidth ? 2 : 1.5;
+  const barcodeHeight = fullWidth ? 80 : 50;
 
   return (
-    <div className={`code-display ${standalone ? "standalone" : ""}`}>
+    <div className={`code-display ${standalone ? "standalone" : ""} ${fullWidth ? "full-width" : ""}`}>
       {showSelector && (
         <div className="code-type-field">
           <label>Code Type</label>
@@ -70,16 +74,16 @@ export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChang
 
       <div className="code-content">
         {isQR ? (
-          <QRCodeSVG value={value} size={180} level="M" />
+          <QRCodeSVG value={value} size={qrSize} level="M" />
         ) : (
           <div className="barcode-wrapper">
             <Barcode
               value={value}
               format={FORMAT_MAP[selectedType as Exclude<CodeType, "qr">]}
-              width={1.5}
-              height={50}
+              width={barcodeWidth}
+              height={barcodeHeight}
               displayValue={true}
-              fontSize={12}
+              fontSize={fullWidth ? 14 : 12}
             />
           </div>
         )}

@@ -61,6 +61,7 @@ export default function CardDetailPage() {
           cardType={card.type}
           codeType={card.codeType}
           showSelector={false}
+          fullWidth={true}
         />
       )}
 

@@ -399,6 +399,11 @@ body {
   align-items: center;
 }
 
+.code-display.full-width {
+  min-height: auto;
+  padding: 30px 20px;
+}
+
 .code-display.standalone {
   background: none;
   box-shadow: none;
