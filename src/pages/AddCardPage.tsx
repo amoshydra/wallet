@@ -105,7 +105,6 @@ export default function AddCardPage() {
         </div>
 
         <div className="form-group">
-          <label>Type</label>
           <CodeDisplay 
             value={number || "Enter card number"} 
             codeType={codeType} 
