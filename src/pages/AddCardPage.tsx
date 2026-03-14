@@ -99,6 +99,18 @@ export default function AddCardPage() {
       
       <form onSubmit={handleSubmit} className="form">
         <div className="form-group">
+          <label htmlFor="name">Name *</label>
+          <input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g., Starbucks Rewards"
+            required
+          />
+        </div>
+
+        <div className="form-group">
           <label htmlFor="type">Card Type</label>
           <select
             id="type"
@@ -116,6 +128,18 @@ export default function AddCardPage() {
             ))}
           </select>
         </div>
+
+        <div className="form-group">
+          <label>Type</label>
+          <CodeDisplay 
+            value={number || "Enter card number"} 
+            cardType={type} 
+            codeType={codeType} 
+            onCodeTypeChange={setCodeType}
+            showSelector={true} 
+            standalone={true} 
+          />
+        </div>
         
         <div className="form-group">
           <label htmlFor="number">Card Number *</label>
@@ -125,32 +149,6 @@ export default function AddCardPage() {
             value={number}
             onChange={(e) => setNumber(e.target.value)}
             placeholder="Card number"
-            required
-          />
-        </div>
-
-        {number && (
-          <div className="code-preview">
-            <label>Preview</label>
-            <CodeDisplay 
-              value={number} 
-              cardType={type} 
-              codeType={codeType} 
-              onCodeTypeChange={setCodeType}
-              showSelector={true} 
-              standalone={true} 
-            />
-          </div>
-        )}
-        
-        <div className="form-group">
-          <label htmlFor="name">Name *</label>
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., Starbucks Rewards"
             required
           />
         </div>
