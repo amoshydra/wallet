@@ -404,6 +404,21 @@ body {
   padding: 30px 20px;
 }
 
+.code-display.full-width .code-content {
+  width: 100%;
+}
+
+.code-display.full-width .barcode-wrapper {
+  width: 100%;
+  max-width: 100%;
+}
+
+.code-display.full-width .barcode-wrapper svg {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
 .code-display.standalone {
   background: none;
   box-shadow: none;

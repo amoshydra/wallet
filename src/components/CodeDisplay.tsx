@@ -59,9 +59,9 @@ export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChang
   };
 
   const isQR = selectedType === "qr";
-  const qrSize = fullWidth ? 280 : 180;
-  const barcodeWidth = fullWidth ? 2 : 1.5;
-  const barcodeHeight = fullWidth ? 80 : 50;
+  const qrSize = fullWidth ? 300 : 180;
+  const barcodeWidth = fullWidth ? 3 : 1.5;
+  const barcodeHeight = fullWidth ? 100 : 50;
 
   return (
     <div className={`code-display ${standalone ? "standalone" : ""} ${fullWidth ? "full-width" : ""}`}>
