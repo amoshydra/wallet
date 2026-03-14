@@ -352,3 +352,74 @@ body {
   gap: 12px;
   justify-content: flex-end;
 }
+
+.code-display {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.code-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.code-tabs .tab {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.code-tabs .tab.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.code-content {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.qr-container {
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+}
+
+.barcode-container {
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.code-value {
+  text-align: center;
+  font-family: monospace;
+  font-size: 14px;
+  color: #666;
+  word-break: break-all;
+  margin-top: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.code-actions {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.info-text {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #666;
+}

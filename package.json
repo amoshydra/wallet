@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "idb": "^8.0.3",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.4",
+    "react-barcode": "^1.6.1",
     "react-dom": "^19.2.4",
     "wouter": "^3.9.0"
   },

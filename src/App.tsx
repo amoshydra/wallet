@@ -5,6 +5,7 @@ import UnlockPage from "./pages/UnlockPage";
 import HomePage from "./pages/HomePage";
 import AddCardPage from "./pages/AddCardPage";
 import CardDetailPage from "./pages/CardDetailPage";
+import CodePage from "./pages/CodePage";
 
 function AppRoutes() {
   const { isFirstTime, isLoading, isUnlocked } = useAuth();
@@ -27,6 +28,7 @@ function AppRoutes() {
       {isUnlocked && <Route path="/" component={HomePage} />}
       {isUnlocked && <Route path="/add" component={AddCardPage} />}
       {isUnlocked && <Route path="/card/:id" component={CardDetailPage} />}
+      {isUnlocked && <Route path="/card/:id/code" component={CodePage} />}
       
       <Route>
         <div className="page">

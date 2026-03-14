@@ -86,6 +86,12 @@ export default function CardDetailPage() {
           
           <div className="card-actions">
             <button 
+              onClick={() => setLocation(`/card/${card.id}/code`)}
+              className="btn-primary"
+            >
+              Show Code
+            </button>
+            <button 
               onClick={() => setShowDeleteConfirm(true)}
               className="btn-danger"
             >
