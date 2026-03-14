@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import Barcode from "react-barcode";
 import type { CardType, CodeType } from "../types/card";
@@ -41,75 +41,50 @@ const FORMAT_MAP: Record<Exclude<CodeType, "qr">, BarcodeFormat> = {
 };
 
 export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChange, showSelector = true, standalone = false }: CodeDisplayProps) {
-  const [selectedType, setSelectedType] = useState<CodeType>(codeType || DEFAULT_CODE_TYPE[cardType]);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const selectedType = codeType || DEFAULT_CODE_TYPE[cardType];
 
   useEffect(() => {
-    if (codeType) {
-      setSelectedType(codeType);
+    if (codeType && onCodeTypeChange) {
+      onCodeTypeChange(codeType);
     }
-  }, [codeType]);
+  }, [codeType, onCodeTypeChange]);
 
-  const handleTypeChange = (newType: CodeType) => {
-    setSelectedType(newType);
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (onCodeTypeChange) {
-      onCodeTypeChange(newType);
+      onCodeTypeChange(e.target.value as CodeType);
     }
-    setShowDropdown(false);
   };
 
   const isQR = selectedType === "qr";
 
   return (
-    <div className={`code-display ${standalone ? "min-height-auto" : ""}`}>
+    <div className={`code-display ${standalone ? "standalone" : ""}`}>
       {showSelector && (
-        <div className="code-type-selector">
-          <button 
-            className="code-type-btn"
-            onClick={() => setShowDropdown(!showDropdown)}
-          >
-            {CODE_OPTIONS.find(o => o.value === selectedType)?.label || "Select Type"} ▼
-          </button>
-          
-          {showDropdown && (
-            <div className="code-type-dropdown">
-              {CODE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  className={`code-type-option ${selectedType === opt.value ? "active" : ""}`}
-                  onClick={() => handleTypeChange(opt.value)}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          )}
+        <div className="code-type-field">
+          <label>Code Type</label>
+          <select value={selectedType} onChange={handleTypeChange}>
+            {CODE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 
       <div className="code-content">
         {isQR ? (
-          <div className="qr-container">
-            <QRCodeSVG
-              value={value}
-              size={250}
-              level="M"
-            />
-          </div>
+          <QRCodeSVG value={value} size={200} level="M" />
         ) : (
-          <div className="barcode-container">
-            <Barcode
-              value={value}
-              format={FORMAT_MAP[selectedType as Exclude<CodeType, "qr">]}
-              width={2}
-              height={80}
-              displayValue={true}
-            />
-          </div>
+          <Barcode
+            value={value}
+            format={FORMAT_MAP[selectedType as Exclude<CodeType, "qr">]}
+            width={2}
+            height={60}
+            displayValue={true}
+          />
         )}
       </div>
-
-      <p className="code-value">{value}</p>
     </div>
   );
 }
