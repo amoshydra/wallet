@@ -27,6 +27,7 @@ function AppRoutes() {
       
       {isUnlocked && <Route path="/" component={HomePage} />}
       {isUnlocked && <Route path="/add" component={AddCardPage} />}
+      {isUnlocked && <Route path="/edit/:id">{() => <AddCardPage />}</Route>}
       {isUnlocked && <Route path="/card/:id" component={CardDetailPage} />}
       {isUnlocked && <Route path="/card/:id/code" component={CodePage} />}
       

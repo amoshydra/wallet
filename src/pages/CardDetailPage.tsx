@@ -45,9 +45,14 @@ export default function CardDetailPage() {
         <button onClick={() => setLocation("/")} className="btn-text">
           ← Back
         </button>
-        <button onClick={() => lock()} className="btn-secondary">
-          Lock
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => setLocation(`/edit/${card.id}`)} className="btn-secondary">
+            Edit
+          </button>
+          <button onClick={() => lock()} className="btn-secondary">
+            Lock
+          </button>
+        </div>
       </header>
 
       {card.number && (

@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { useLocation, useRoute } from "wouter";
 import { useAuth } from "../contexts/AuthContext";
-import type { CardType } from "../types/card";
+import type { Card, CardType } from "../types/card";
 
 const CARD_TYPES: { value: CardType; label: string }[] = [
   { value: "loyalty", label: "Loyalty Card" },
@@ -11,13 +11,31 @@ const CARD_TYPES: { value: CardType; label: string }[] = [
 ];
 
 export default function AddCardPage() {
-  const { addCard } = useAuth();
+  const { addCard, updateCard, getCards } = useAuth();
   const [, setLocation] = useLocation();
+  const [match, params] = useRoute("/edit/:id");
+  
+  const cardId = match ? params?.id : undefined;
+  const isEditing = !!cardId;
+  
   const [name, setName] = useState("");
   const [number, setNumber] = useState("");
   const [type, setType] = useState<CardType>("loyalty");
   const [imageData, setImageData] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isEditing && cardId) {
+      const cards = getCards();
+      const card = cards.find((c: Card) => c.id === cardId);
+      if (card) {
+        setName(card.name);
+        setNumber(card.number || "");
+        setType(card.type);
+        setImageData(card.imageData || null);
+      }
+    }
+  }, [isEditing, cardId, getCards]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -36,13 +54,23 @@ export default function AddCardPage() {
     
     setIsSubmitting(true);
     try {
-      await addCard({
-        name: name.trim(),
-        number: number.trim() || undefined,
-        type,
-        imageData: imageData || undefined,
-      });
-      setLocation("/");
+      if (isEditing && cardId) {
+        await updateCard(cardId, {
+          name: name.trim(),
+          number: number.trim() || undefined,
+          type,
+          imageData: imageData || undefined,
+        });
+        setLocation(`/card/${cardId}`);
+      } else {
+        await addCard({
+          name: name.trim(),
+          number: number.trim() || undefined,
+          type,
+          imageData: imageData || undefined,
+        });
+        setLocation("/");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -54,7 +82,7 @@ export default function AddCardPage() {
         <button onClick={() => setLocation("/")} className="btn-text">
           ← Back
         </button>
-        <h1>Add Card</h1>
+        <h1>{isEditing ? "Edit Card" : "Add Card"}</h1>
       </header>
       
       <form onSubmit={handleSubmit} className="form">
@@ -114,7 +142,7 @@ export default function AddCardPage() {
           className="btn-primary"
           disabled={isSubmitting || !name.trim()}
         >
-          {isSubmitting ? "Saving..." : "Save Card"}
+          {isSubmitting ? "Saving..." : isEditing ? "Update Card" : "Save Card"}
         </button>
       </form>
     </div>
