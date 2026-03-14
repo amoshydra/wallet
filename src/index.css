@@ -432,12 +432,11 @@ body {
 }
 
 .code-display.standalone .code-type-field {
-  width: auto;
-  min-width: 150px;
+  width: 100%;
 }
 
 .code-display.standalone .code-type-field label {
-  display: none;
+  display: block;
 }
 
 .code-display.standalone .code-content {
