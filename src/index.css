@@ -353,6 +353,28 @@ body {
   justify-content: flex-end;
 }
 
+.detail-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.detail-tabs .tab {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.detail-tabs .tab.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
 .code-display {
   background: white;
   border-radius: 12px;
