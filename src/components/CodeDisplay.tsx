@@ -70,15 +70,18 @@ export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChang
 
       <div className="code-content">
         {isQR ? (
-          <QRCodeSVG value={value} size={200} level="M" />
+          <QRCodeSVG value={value} size={180} level="M" />
         ) : (
-          <Barcode
-            value={value}
-            format={FORMAT_MAP[selectedType as Exclude<CodeType, "qr">]}
-            width={2}
-            height={60}
-            displayValue={true}
-          />
+          <div className="barcode-wrapper">
+            <Barcode
+              value={value}
+              format={FORMAT_MAP[selectedType as Exclude<CodeType, "qr">]}
+              width={1.5}
+              height={50}
+              displayValue={true}
+              fontSize={12}
+            />
+          </div>
         )}
       </div>
     </div>

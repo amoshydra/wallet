@@ -443,7 +443,20 @@ body {
   flex: 1;
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: 10px 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.barcode-wrapper {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.barcode-wrapper svg {
+  max-width: 100%;
+  height: auto;
 }
 
 .code-tabs {
