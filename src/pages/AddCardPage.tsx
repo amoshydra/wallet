@@ -60,14 +60,14 @@ export default function AddCardPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || !number.trim()) return;
     
     setIsSubmitting(true);
     try {
       if (isEditing && cardId) {
         await updateCard(cardId, {
           name: name.trim(),
-          number: number.trim() || undefined,
+          number: number.trim(),
           type,
           codeType,
           imageData: imageData || undefined,
@@ -76,7 +76,7 @@ export default function AddCardPage() {
       } else {
         await addCard({
           name: name.trim(),
-          number: number.trim() || undefined,
+          number: number.trim(),
           type,
           codeType,
           imageData: imageData || undefined,
@@ -118,6 +118,25 @@ export default function AddCardPage() {
         </div>
         
         <div className="form-group">
+          <label htmlFor="number">Card Number *</label>
+          <input
+            id="number"
+            type="text"
+            value={number}
+            onChange={(e) => setNumber(e.target.value)}
+            placeholder="Card number"
+            required
+          />
+        </div>
+
+        {number && (
+          <div className="code-preview">
+            <label>Preview</label>
+            <CodeDisplay value={number} cardType={type} codeType={codeType} showSelector={true} standalone={true} />
+          </div>
+        )}
+        
+        <div className="form-group">
           <label htmlFor="name">Name *</label>
           <input
             id="name"
@@ -128,24 +147,6 @@ export default function AddCardPage() {
             required
           />
         </div>
-        
-        <div className="form-group">
-          <label htmlFor="number">Card Number (optional)</label>
-          <input
-            id="number"
-            type="text"
-            value={number}
-            onChange={(e) => setNumber(e.target.value)}
-            placeholder="Card number"
-          />
-        </div>
-
-        {number && (
-          <div className="form-group">
-            <label>Code Preview</label>
-            <CodeDisplay value={number} cardType={type} codeType={codeType} />
-          </div>
-        )}
         
         <div className="form-group">
           <label htmlFor="image">Image (optional)</label>
@@ -163,7 +164,7 @@ export default function AddCardPage() {
         <button 
           type="submit" 
           className="btn-primary"
-          disabled={isSubmitting || !name.trim()}
+          disabled={isSubmitting || !name.trim() || !number.trim()}
         >
           {isSubmitting ? "Saving..." : isEditing ? "Update Card" : "Save Card"}
         </button>

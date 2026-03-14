@@ -9,6 +9,7 @@ interface CodeDisplayProps {
   codeType?: CodeType;
   onCodeTypeChange?: (codeType: CodeType) => void;
   showSelector?: boolean;
+  standalone?: boolean;
 }
 
 type BarcodeFormat = "CODE128" | "CODE39" | "EAN13" | "EAN8" | "UPC" | "ITF14";
@@ -39,7 +40,7 @@ const FORMAT_MAP: Record<Exclude<CodeType, "qr">, BarcodeFormat> = {
   itf14: "ITF14",
 };
 
-export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChange, showSelector = true }: CodeDisplayProps) {
+export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChange, showSelector = true, standalone = false }: CodeDisplayProps) {
   const [selectedType, setSelectedType] = useState<CodeType>(codeType || DEFAULT_CODE_TYPE[cardType]);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -60,7 +61,7 @@ export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChang
   const isQR = selectedType === "qr";
 
   return (
-    <div className="code-display">
+    <div className={`code-display ${standalone ? "min-height-auto" : ""}`}>
       {showSelector && (
         <div className="code-type-selector">
           <button 

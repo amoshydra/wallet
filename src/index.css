@@ -375,15 +375,40 @@ body {
   border-color: #007bff;
 }
 
+.code-preview {
+  margin: 16px 0;
+}
+
+.code-preview label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #555;
+}
+
 .code-display {
   background: white;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  min-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+}
+
+.code-display.min-height-auto {
+  min-height: auto;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.code-display.min-height-auto .code-type-selector {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.code-display.min-height-auto .code-content {
+  padding: 10px 0;
 }
 
 .code-type-selector {
