@@ -400,8 +400,11 @@ body {
 }
 
 .code-display.full-width {
-  min-height: auto;
+  min-height: calc(100vh - 120px);
   padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .code-display.full-width .code-content {
