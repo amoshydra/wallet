@@ -1,46 +1,90 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import Barcode from "react-barcode";
-import type { CardType } from "../types/card";
+import type { CardType, CodeType } from "../types/card";
 
 interface CodeDisplayProps {
   value: string;
   cardType: CardType;
+  codeType?: CodeType;
+  onCodeTypeChange?: (codeType: CodeType) => void;
 }
 
-type CodeFormat = "qr" | "barcode";
+type BarcodeFormat = "CODE128" | "CODE39" | "EAN13" | "EAN8" | "UPC" | "ITF14";
 
-type BarcodeFormat = "CODE128" | "CODE39" | "EAN13" | "EAN8" | "UPC" | "ITF14" | "MSI";
+const CODE_OPTIONS: { value: CodeType; label: string }[] = [
+  { value: "qr", label: "QR Code" },
+  { value: "code128", label: "Code 128" },
+  { value: "code39", label: "Code 39" },
+  { value: "ean13", label: "EAN-13" },
+  { value: "ean8", label: "EAN-8" },
+  { value: "upc", label: "UPC" },
+  { value: "itf14", label: "ITF-14" },
+];
 
-const BARCODE_FORMAT: Record<CardType, BarcodeFormat> = {
-  loyalty: "CODE128",
-  passport: "CODE128",
-  id: "CODE128",
-  boarding: "CODE128",
+const DEFAULT_CODE_TYPE: Record<CardType, CodeType> = {
+  loyalty: "code128",
+  passport: "code128",
+  id: "code128",
+  boarding: "code128",
 };
 
-export default function CodeDisplay({ value, cardType }: CodeDisplayProps) {
-  const [format, setFormat] = useState<CodeFormat>("qr");
+const FORMAT_MAP: Record<Exclude<CodeType, "qr">, BarcodeFormat> = {
+  code128: "CODE128",
+  code39: "CODE39",
+  ean13: "EAN13",
+  ean8: "EAN8",
+  upc: "UPC",
+  itf14: "ITF14",
+};
+
+export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChange }: CodeDisplayProps) {
+  const [selectedType, setSelectedType] = useState<CodeType>(codeType || DEFAULT_CODE_TYPE[cardType]);
+  const [showSelector, setShowSelector] = useState(false);
+
+  useEffect(() => {
+    if (codeType) {
+      setSelectedType(codeType);
+    }
+  }, [codeType]);
+
+  const handleTypeChange = (newType: CodeType) => {
+    setSelectedType(newType);
+    if (onCodeTypeChange) {
+      onCodeTypeChange(newType);
+    }
+    setShowSelector(false);
+  };
+
+  const isQR = selectedType === "qr";
 
   return (
     <div className="code-display">
-      <div className="code-tabs">
-        <button
-          className={`tab ${format === "qr" ? "active" : ""}`}
-          onClick={() => setFormat("qr")}
+      <div className="code-type-selector">
+        <button 
+          className="code-type-btn"
+          onClick={() => setShowSelector(!showSelector)}
         >
-          QR Code
+          {CODE_OPTIONS.find(o => o.value === selectedType)?.label || "Select Type"} ▼
         </button>
-        <button
-          className={`tab ${format === "barcode" ? "active" : ""}`}
-          onClick={() => setFormat("barcode")}
-        >
-          Barcode
-        </button>
+        
+        {showSelector && (
+          <div className="code-type-dropdown">
+            {CODE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                className={`code-type-option ${selectedType === opt.value ? "active" : ""}`}
+                onClick={() => handleTypeChange(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="code-content">
-        {format === "qr" ? (
+        {isQR ? (
           <div className="qr-container">
             <QRCodeSVG
               value={value}
@@ -52,7 +96,7 @@ export default function CodeDisplay({ value, cardType }: CodeDisplayProps) {
           <div className="barcode-container">
             <Barcode
               value={value}
-              format={BARCODE_FORMAT[cardType]}
+              format={FORMAT_MAP[selectedType as Exclude<CodeType, "qr">]}
               width={2}
               height={80}
               displayValue={true}
