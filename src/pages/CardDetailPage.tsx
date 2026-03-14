@@ -58,7 +58,6 @@ export default function CardDetailPage() {
       {card.number && (
         <CodeDisplay 
           value={card.number} 
-          cardType={card.type}
           codeType={card.codeType}
           showSelector={false}
           fullWidth={true}
@@ -75,7 +74,6 @@ export default function CardDetailPage() {
         )}
         
         <div className="card-detail-info">
-          <span className="card-type-badge">{card.type}</span>
           <h2>{card.name}</h2>
           
           {card.number && (

@@ -74,7 +74,7 @@ export default function CodePage() {
         </div>
       ) : (
         <>
-          <CodeDisplay value={codeValue} cardType={card.type} />
+          <CodeDisplay value={codeValue} codeType={card.codeType} />
           
           <div className="code-actions">
             <button

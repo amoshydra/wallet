@@ -60,7 +60,6 @@ export default function AddCardPage() {
         await addCard({
           name: name.trim(),
           number: number.trim(),
-          type: "loyalty",
           codeType,
           imageData: imageData || undefined,
         });
@@ -109,7 +108,6 @@ export default function AddCardPage() {
           <label>Type</label>
           <CodeDisplay 
             value={number || "Enter card number"} 
-            cardType="loyalty"
             codeType={codeType} 
             onCodeTypeChange={setCodeType}
             showSelector={true} 

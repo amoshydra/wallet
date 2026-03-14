@@ -38,12 +38,11 @@ export default function HomePage() {
                 <img src={card.imageData} alt={card.name} className="card-image" />
               ) : (
                 <div className="card-placeholder">
-                  <span>{card.type[0].toUpperCase()}</span>
+                  <span>{card.name[0].toUpperCase()}</span>
                 </div>
               )}
               <div className="card-info">
                 <span className="card-name">{card.name}</span>
-                <span className="card-type">{card.type}</span>
               </div>
             </div>
           ))}
