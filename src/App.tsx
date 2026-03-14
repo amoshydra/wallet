@@ -6,24 +6,6 @@ import HomePage from "./pages/HomePage";
 import AddCardPage from "./pages/AddCardPage";
 import CardDetailPage from "./pages/CardDetailPage";
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isUnlocked, isLoading } = useAuth();
-  
-  if (isLoading) {
-    return (
-      <div className="page">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-  
-  if (!isUnlocked) {
-    return <UnlockPage />;
-  }
-  
-  return <>{children}</>;
-}
-
 function AppRoutes() {
   const { isFirstTime, isLoading, isUnlocked } = useAuth();
   
@@ -42,11 +24,9 @@ function AppRoutes() {
       {isFirstTime && <Route path="/unlock" component={SetupPage} />}
       {isFirstTime && <Route path="/"><SetupPage /></Route>}
       
-      <ProtectedRoute>
-        <Route path="/" component={HomePage} />
-        <Route path="/add" component={AddCardPage} />
-        <Route path="/card/:id" component={CardDetailPage} />
-      </ProtectedRoute>
+      {isUnlocked && <Route path="/" component={HomePage} />}
+      {isUnlocked && <Route path="/add" component={AddCardPage} />}
+      {isUnlocked && <Route path="/card/:id" component={CardDetailPage} />}
       
       <Route>
         <div className="page">

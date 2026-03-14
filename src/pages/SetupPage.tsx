@@ -6,6 +6,7 @@ export default function SetupPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [localError, setLocalError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +21,12 @@ export default function SetupPage() {
       return;
     }
     
-    await setupPassword(password);
+    setIsSubmitting(true);
+    try {
+      await setupPassword(password);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -61,8 +67,8 @@ export default function SetupPage() {
             <p className="error">{localError || error}</p>
           )}
           
-          <button type="submit" className="btn-primary">
-            Create Password & Start
+          <button type="submit" className="btn-primary" disabled={isSubmitting}>
+            {isSubmitting ? "Setting up..." : "Create Password & Start"}
           </button>
         </form>
       </div>

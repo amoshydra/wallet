@@ -11,7 +11,7 @@ export default function HomePage() {
     <div className="page">
       <header className="header">
         <h1>My Cards</h1>
-        <button onClick={lock} className="btn-secondary">
+        <button onClick={() => lock()} className="btn-secondary">
           Lock
         </button>
       </header>

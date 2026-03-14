@@ -34,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const keyRef = useRef<CryptoKey | null>(null);
   const lastActivityRef = useRef<number>(Date.now());
   const checkIntervalRef = useRef<number | null>(null);
+  const originalRouteRef = useRef<string>("/");
 
   useEffect(() => {
     (async () => {
@@ -48,7 +49,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, [setLocation]);
 
-  const lock = useCallback(() => {
+  const lock = useCallback((currentRoute?: string) => {
+    if (currentRoute) {
+      originalRouteRef.current = currentRoute;
+    }
     setIsUnlocked(false);
     setCards([]);
     keyRef.current = null;
@@ -59,31 +63,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const handleActivity = () => {
       lastActivityRef.current = Date.now();
     };
-    
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        lock();
-      }
-    };
-    
-    const handleBlur = () => {
-      lock();
-    };
 
     window.addEventListener("click", handleActivity);
     window.addEventListener("touchstart", handleActivity);
     window.addEventListener("keydown", handleActivity);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("blur", handleBlur);
 
     return () => {
       window.removeEventListener("click", handleActivity);
       window.removeEventListener("touchstart", handleActivity);
       window.removeEventListener("keydown", handleActivity);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("blur", handleBlur);
     };
-  }, [lock]);
+  }, []);
 
   useEffect(() => {
     if (!isUnlocked) return;
@@ -118,8 +108,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setCards([]);
       setLocation("/");
     } catch (e) {
-      setError("Failed to setup password");
-      console.error(e);
+      const message = e instanceof Error ? e.message : "Unknown error";
+      setError(`Failed to setup password: ${message}`);
+      console.error("Setup error:", e);
     }
   };
 
@@ -139,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!stored) {
         setIsUnlocked(true);
         setCards([]);
-        setLocation("/");
+        setLocation(originalRouteRef.current);
         return;
       }
       
@@ -147,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data: AppData = JSON.parse(decrypted);
       setCards(data.cards);
       setIsUnlocked(true);
-      setLocation("/");
+      setLocation(originalRouteRef.current);
     } catch (e) {
       setError("Incorrect password");
       keyRef.current = null;

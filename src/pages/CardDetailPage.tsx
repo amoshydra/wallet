@@ -44,7 +44,7 @@ export default function CardDetailPage() {
         <button onClick={() => setLocation("/")} className="btn-text">
           ← Back
         </button>
-        <button onClick={lock} className="btn-secondary">
+        <button onClick={() => lock()} className="btn-secondary">
           Lock
         </button>
       </header>

@@ -1,4 +1,4 @@
-const PBKDF2_ITERATIONS = 600000;
+const PBKDF2_ITERATIONS = 100000;
 const SALT_LENGTH = 16;
 const IV_LENGTH = 12;
 const KEY_LENGTH = 256;
@@ -42,7 +42,7 @@ export async function encrypt(data: string, key: CryptoKey): Promise<{ encrypted
     encoder.encode(data)
   );
   
-  return { encrypted: encrypted, iv: iv.buffer as ArrayBuffer };
+  return { encrypted, iv: iv.buffer as ArrayBuffer };
 }
 
 export async function decrypt(encrypted: ArrayBuffer, iv: ArrayBuffer, key: CryptoKey): Promise<string> {
