@@ -2,10 +2,10 @@ import { useState } from "react";
 import { useLocation, useRoute } from "wouter";
 import { useAuth } from "../contexts/AuthContext";
 import CodeDisplay from "../components/CodeDisplay";
-import type { Card, CodeType } from "../types/card";
+import type { Card } from "../types/card";
 
 export default function CardDetailPage() {
-  const { getCards, deleteCard, lock, updateCard } = useAuth();
+  const { getCards, deleteCard, lock } = useAuth();
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/card/:id");
   const [showNumber, setShowNumber] = useState(false);
@@ -60,7 +60,7 @@ export default function CardDetailPage() {
           value={card.number} 
           cardType={card.type}
           codeType={card.codeType}
-          onCodeTypeChange={(codeType: CodeType) => updateCard(card.id, { codeType })}
+          showSelector={false}
         />
       )}
 

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
 import { useAuth } from "../contexts/AuthContext";
-import type { Card, CardType } from "../types/card";
+import CodeDisplay from "../components/CodeDisplay";
+import type { Card, CardType, CodeType } from "../types/card";
 
 const CARD_TYPES: { value: CardType; label: string }[] = [
   { value: "loyalty", label: "Loyalty Card" },
@@ -9,6 +10,13 @@ const CARD_TYPES: { value: CardType; label: string }[] = [
   { value: "id", label: "ID Card" },
   { value: "boarding", label: "Boarding Pass" },
 ];
+
+const DEFAULT_CODE_TYPE: Record<CardType, CodeType> = {
+  loyalty: "qr",
+  passport: "qr",
+  id: "qr",
+  boarding: "qr",
+};
 
 export default function AddCardPage() {
   const { addCard, updateCard, getCards } = useAuth();
@@ -21,6 +29,7 @@ export default function AddCardPage() {
   const [name, setName] = useState("");
   const [number, setNumber] = useState("");
   const [type, setType] = useState<CardType>("loyalty");
+  const [codeType, setCodeType] = useState<CodeType>("qr");
   const [imageData, setImageData] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -32,6 +41,7 @@ export default function AddCardPage() {
         setName(card.name);
         setNumber(card.number || "");
         setType(card.type);
+        setCodeType(card.codeType || DEFAULT_CODE_TYPE[card.type]);
         setImageData(card.imageData || null);
       }
     }
@@ -59,6 +69,7 @@ export default function AddCardPage() {
           name: name.trim(),
           number: number.trim() || undefined,
           type,
+          codeType,
           imageData: imageData || undefined,
         });
         setLocation(`/card/${cardId}`);
@@ -67,6 +78,7 @@ export default function AddCardPage() {
           name: name.trim(),
           number: number.trim() || undefined,
           type,
+          codeType,
           imageData: imageData || undefined,
         });
         setLocation("/");
@@ -78,7 +90,7 @@ export default function AddCardPage() {
 
   return (
     <div className="page">
-      <header className="header">
+      <header className="Header">
         <button onClick={() => setLocation("/")} className="btn-text">
           ← Back
         </button>
@@ -91,7 +103,11 @@ export default function AddCardPage() {
           <select
             id="type"
             value={type}
-            onChange={(e) => setType(e.target.value as CardType)}
+            onChange={(e) => {
+              const newType = e.target.value as CardType;
+              setType(newType);
+              setCodeType(DEFAULT_CODE_TYPE[newType]);
+            }}
           >
             {CARD_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
@@ -123,6 +139,13 @@ export default function AddCardPage() {
             placeholder="Card number"
           />
         </div>
+
+        {number && (
+          <div className="form-group">
+            <label>Code Preview</label>
+            <CodeDisplay value={number} cardType={type} codeType={codeType} />
+          </div>
+        )}
         
         <div className="form-group">
           <label htmlFor="image">Image (optional)</label>

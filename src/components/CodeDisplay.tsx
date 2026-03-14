@@ -8,6 +8,7 @@ interface CodeDisplayProps {
   cardType: CardType;
   codeType?: CodeType;
   onCodeTypeChange?: (codeType: CodeType) => void;
+  showSelector?: boolean;
 }
 
 type BarcodeFormat = "CODE128" | "CODE39" | "EAN13" | "EAN8" | "UPC" | "ITF14";
@@ -23,10 +24,10 @@ const CODE_OPTIONS: { value: CodeType; label: string }[] = [
 ];
 
 const DEFAULT_CODE_TYPE: Record<CardType, CodeType> = {
-  loyalty: "code128",
-  passport: "code128",
-  id: "code128",
-  boarding: "code128",
+  loyalty: "qr",
+  passport: "qr",
+  id: "qr",
+  boarding: "qr",
 };
 
 const FORMAT_MAP: Record<Exclude<CodeType, "qr">, BarcodeFormat> = {
@@ -38,9 +39,9 @@ const FORMAT_MAP: Record<Exclude<CodeType, "qr">, BarcodeFormat> = {
   itf14: "ITF14",
 };
 
-export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChange }: CodeDisplayProps) {
+export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChange, showSelector = true }: CodeDisplayProps) {
   const [selectedType, setSelectedType] = useState<CodeType>(codeType || DEFAULT_CODE_TYPE[cardType]);
-  const [showSelector, setShowSelector] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     if (codeType) {
@@ -53,35 +54,37 @@ export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChang
     if (onCodeTypeChange) {
       onCodeTypeChange(newType);
     }
-    setShowSelector(false);
+    setShowDropdown(false);
   };
 
   const isQR = selectedType === "qr";
 
   return (
     <div className="code-display">
-      <div className="code-type-selector">
-        <button 
-          className="code-type-btn"
-          onClick={() => setShowSelector(!showSelector)}
-        >
-          {CODE_OPTIONS.find(o => o.value === selectedType)?.label || "Select Type"} ▼
-        </button>
-        
-        {showSelector && (
-          <div className="code-type-dropdown">
-            {CODE_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                className={`code-type-option ${selectedType === opt.value ? "active" : ""}`}
-                onClick={() => handleTypeChange(opt.value)}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      {showSelector && (
+        <div className="code-type-selector">
+          <button 
+            className="code-type-btn"
+            onClick={() => setShowDropdown(!showDropdown)}
+          >
+            {CODE_OPTIONS.find(o => o.value === selectedType)?.label || "Select Type"} ▼
+          </button>
+          
+          {showDropdown && (
+            <div className="code-type-dropdown">
+              {CODE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  className={`code-type-option ${selectedType === opt.value ? "active" : ""}`}
+                  onClick={() => handleTypeChange(opt.value)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="code-content">
         {isQR ? (
