@@ -1,0 +1,122 @@
+import { useState } from "react";
+import { useLocation } from "wouter";
+import { useAuth } from "../contexts/AuthContext";
+import type { CardType } from "../types/card";
+
+const CARD_TYPES: { value: CardType; label: string }[] = [
+  { value: "loyalty", label: "Loyalty Card" },
+  { value: "passport", label: "Passport" },
+  { value: "id", label: "ID Card" },
+  { value: "boarding", label: "Boarding Pass" },
+];
+
+export default function AddCardPage() {
+  const { addCard } = useAuth();
+  const [, setLocation] = useLocation();
+  const [name, setName] = useState("");
+  const [number, setNumber] = useState("");
+  const [type, setType] = useState<CardType>("loyalty");
+  const [imageData, setImageData] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImageData(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    
+    setIsSubmitting(true);
+    try {
+      await addCard({
+        name: name.trim(),
+        number: number.trim() || undefined,
+        type,
+        imageData: imageData || undefined,
+      });
+      setLocation("/");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="page">
+      <header className="header">
+        <button onClick={() => setLocation("/")} className="btn-text">
+          ← Back
+        </button>
+        <h1>Add Card</h1>
+      </header>
+      
+      <form onSubmit={handleSubmit} className="form">
+        <div className="form-group">
+          <label htmlFor="type">Card Type</label>
+          <select
+            id="type"
+            value={type}
+            onChange={(e) => setType(e.target.value as CardType)}
+          >
+            {CARD_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="name">Name *</label>
+          <input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g., Starbucks Rewards"
+            required
+          />
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="number">Card Number (optional)</label>
+          <input
+            id="number"
+            type="text"
+            value={number}
+            onChange={(e) => setNumber(e.target.value)}
+            placeholder="Card number"
+          />
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="image">Image (optional)</label>
+          <input
+            id="image"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+          {imageData && (
+            <img src={imageData} alt="Preview" className="image-preview" />
+          )}
+        </div>
+        
+        <button 
+          type="submit" 
+          className="btn-primary"
+          disabled={isSubmitting || !name.trim()}
+        >
+          {isSubmitting ? "Saving..." : "Save Card"}
+        </button>
+      </form>
+    </div>
+  );
+}
