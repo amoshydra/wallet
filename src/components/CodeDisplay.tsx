@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import Barcode from "react-barcode";
 import type { CardType, CodeType } from "../types/card";
@@ -41,17 +41,13 @@ const FORMAT_MAP: Record<Exclude<CodeType, "qr">, BarcodeFormat> = {
 };
 
 export default function CodeDisplay({ value, cardType, codeType, onCodeTypeChange, showSelector = true, standalone = false }: CodeDisplayProps) {
-  const selectedType = codeType || DEFAULT_CODE_TYPE[cardType];
-
-  useEffect(() => {
-    if (codeType && onCodeTypeChange) {
-      onCodeTypeChange(codeType);
-    }
-  }, [codeType, onCodeTypeChange]);
+  const [selectedType, setSelectedType] = useState<CodeType>(codeType || DEFAULT_CODE_TYPE[cardType]);
 
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newType = e.target.value as CodeType;
+    setSelectedType(newType);
     if (onCodeTypeChange) {
-      onCodeTypeChange(e.target.value as CodeType);
+      onCodeTypeChange(newType);
     }
   };
 

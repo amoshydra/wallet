@@ -132,7 +132,14 @@ export default function AddCardPage() {
         {number && (
           <div className="code-preview">
             <label>Preview</label>
-            <CodeDisplay value={number} cardType={type} codeType={codeType} showSelector={true} standalone={true} />
+            <CodeDisplay 
+              value={number} 
+              cardType={type} 
+              codeType={codeType} 
+              onCodeTypeChange={setCodeType}
+              showSelector={true} 
+              standalone={true} 
+            />
           </div>
         )}
         
