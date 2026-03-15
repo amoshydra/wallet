@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState, type ChangeEvent, type SubmitEvent } from 'react';
 import { useLocation, useRoute } from 'wouter';
-import { useAuth } from '../contexts/AuthContext';
 import CodeDisplay from '../components/CodeDisplay';
+import { useAuth } from '../contexts/AuthContext';
 import type { Card, CodeType } from '../types/card';
 
 export default function AddCardPage() {
@@ -31,7 +31,7 @@ export default function AddCardPage() {
     }
   }, [isEditing, cardId, getCards]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -42,7 +42,7 @@ export default function AddCardPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     if (!name.trim() || !number.trim()) return;
 

@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
-import Barcode from 'react-barcode';
 import * as PDF417 from 'pdf417-generator';
+import { QRCodeSVG } from 'qrcode.react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import Barcode from 'react-barcode';
 import type { CodeType } from '../types/card';
 
 interface CodeDisplayProps {
@@ -85,7 +85,7 @@ export default function CodeDisplay({
     setRenderError(null);
   }, [value, selectedType]);
 
-  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleTypeChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const newType = e.target.value as CodeType;
     setSelectedType(newType);
     setRenderError(null);

@@ -1,16 +1,16 @@
 import {
   createContext,
-  useContext,
-  useState,
   useCallback,
+  useContext,
   useEffect,
   useRef,
+  useState,
   type ReactNode,
 } from 'react';
 import { useLocation } from 'wouter';
 import type { AppData } from '../types/card';
-import { deriveKey, encrypt, decrypt, generateSalt } from '../utils/crypto';
-import { getSalt, setSalt, getEncryptedData, setEncryptedData, hasPassword } from '../utils/db';
+import { decrypt, deriveKey, encrypt, generateSalt } from '../utils/crypto';
+import { getEncryptedData, getSalt, hasPassword, setEncryptedData, setSalt } from '../utils/db';
 
 interface AuthContextType {
   isUnlocked: boolean;
