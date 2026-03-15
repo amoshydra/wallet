@@ -1,15 +1,15 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useLocation, useRoute } from 'wouter';
-import { useAuth } from '../contexts/AuthContext';
 import CodeDisplay from '../components/CodeDisplay';
+import { useAuth } from '../contexts/AuthContext';
 import type { Card } from '../types/card';
 
 export default function CardDetailPage() {
   const { getCards, deleteCard, lock } = useAuth();
   const [, setLocation] = useLocation();
   const [match, params] = useRoute('/card/:id');
-  const [showNumber, setShowNumber] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const copiedTimeoutRef = useRef(-1);
   const [copied, setCopied] = useState(false);
 
   const cards = getCards();
@@ -30,10 +30,12 @@ export default function CardDetailPage() {
   }
 
   const handleCopy = async () => {
+    clearTimeout(copiedTimeoutRef.current);
+    setCopied(false);
     if (card.number) {
       await navigator.clipboard.writeText(card.number);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -96,22 +98,18 @@ export default function CardDetailPage() {
           <h2>{card.name}</h2>
 
           {card.number && (
-            <div className="card-number-container">
+            <div
+              className="card-number-container"
+              onClick={handleCopy}
+            >
               <span className="card-number-label">Card Number</span>
               <div className="card-number-row">
                 <span
                   className="card-number"
-                  onClick={handleCopy}
                   title="Click to copy"
                 >
-                  {showNumber ? card.number : '•'.repeat(card.number.length)}
+                  {card.number}
                 </span>
-                <button
-                  onClick={() => setShowNumber(!showNumber)}
-                  className="btn-text"
-                >
-                  {showNumber ? 'Hide' : 'Show'}
-                </button>
               </div>
               {copied && <span className="copied-text">Copied!</span>}
             </div>

@@ -288,6 +288,7 @@ body {
   padding: 16px;
   background: #f8f9fa;
   border-radius: 8px;
+  cursor: pointer;
 }
 
 .card-number-label {
@@ -307,7 +308,6 @@ body {
   font-family: monospace;
   font-size: 18px;
   letter-spacing: 2px;
-  cursor: pointer;
 }
 
 .copied-text {
