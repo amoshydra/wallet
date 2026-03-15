@@ -1,26 +1,51 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
-import { useAuth } from '../contexts/AuthContext';
+import { ArrowUpDown, MoreVertical } from 'lucide-react';
 import DropdownMenu from '../components/DropdownMenu';
 import ExportModal from '../components/ExportModal';
 import ImportModal from '../components/ImportModal';
+import { useAuth } from '../contexts/AuthContext';
 import type { Card } from '../types/card';
+import {
+  getSortPreference,
+  setSortPreference,
+  sortCards,
+  type SortOption,
+  SORT_OPTIONS,
+} from '../utils/sort';
 
 export default function HomePage() {
   const { getCards, lock, importCards } = useAuth();
   const [, setLocation] = useLocation();
   const [showExportModal, setShowExportModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('recentlyViewed');
   const cards = getCards();
+
+  useEffect(() => {
+    setSortBy(getSortPreference());
+  }, []);
 
   const handleImport = async (importedCards: Omit<Card, 'id' | 'createdAt'>[]) => {
     await importCards(importedCards);
   };
 
-  const dropdownItems = [
+  const handleSortChange = (newSort: SortOption) => {
+    setSortBy(newSort);
+    setSortPreference(newSort);
+  };
+
+  const sortedCards = sortCards(cards, sortBy);
+
+  const menuItems = [
     { label: 'Export', onClick: () => setShowExportModal(true) },
     { label: 'Import', onClick: () => setShowImportModal(true) },
   ];
+
+  const sortItems = SORT_OPTIONS.map((opt) => ({
+    label: sortBy === opt.value ? `✓ ${opt.label}` : opt.label,
+    onClick: () => handleSortChange(opt.value),
+  }));
 
   return (
     <div className="page">
@@ -28,8 +53,26 @@ export default function HomePage() {
         <h1>My Cards</h1>
         <div className="header-actions">
           <DropdownMenu
-            trigger={<button className="btn-secondary">Menu</button>}
-            items={dropdownItems}
+            trigger={
+              <button
+                className="icon-btn"
+                aria-label="Sort"
+              >
+                <ArrowUpDown size={20} />
+              </button>
+            }
+            items={sortItems}
+          />
+          <DropdownMenu
+            trigger={
+              <button
+                className="icon-btn"
+                aria-label="Menu"
+              >
+                <MoreVertical size={20} />
+              </button>
+            }
+            items={menuItems}
           />
           <button
             onClick={() => lock()}
@@ -40,7 +83,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {cards.length === 0 ? (
+      {sortedCards.length === 0 ? (
         <div className="empty-state">
           <p>No cards yet</p>
           <button
@@ -52,7 +95,7 @@ export default function HomePage() {
         </div>
       ) : (
         <div className="card-grid">
-          {cards.map((card: Card) => (
+          {sortedCards.map((card: Card) => (
             <div
               key={card.id}
               className="card-item"
@@ -87,7 +130,7 @@ export default function HomePage() {
 
       {showExportModal && (
         <ExportModal
-          cards={cards}
+          cards={sortedCards}
           onClose={() => setShowExportModal(false)}
         />
       )}

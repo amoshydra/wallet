@@ -155,10 +155,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const addCard = async (card: Omit<import('../types/card').Card, 'id' | 'createdAt'>) => {
+    const now = Date.now();
     const newCard: import('../types/card').Card = {
       ...card,
       id: crypto.randomUUID(),
-      createdAt: Date.now(),
+      createdAt: now,
+      lastViewedAt: now,
     };
     await saveCards([...cards, newCard]);
   };
@@ -166,10 +168,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const importCards = async (
     importedCards: Omit<import('../types/card').Card, 'id' | 'createdAt'>[],
   ) => {
+    const now = Date.now();
     const newCards = importedCards.map((card) => ({
       ...card,
       id: crypto.randomUUID(),
-      createdAt: Date.now(),
+      createdAt: now,
+      lastViewedAt: now,
     }));
     await saveCards([...cards, ...newCards]);
   };

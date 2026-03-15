@@ -20,6 +20,7 @@ export interface Card {
   imageData?: string;
   codeType?: CodeType;
   createdAt: number;
+  lastViewedAt?: number;
 }
 
 export interface AppData {

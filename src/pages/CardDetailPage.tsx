@@ -1,11 +1,11 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import CodeDisplay from '../components/CodeDisplay';
 import { useAuth } from '../contexts/AuthContext';
 import type { Card } from '../types/card';
 
 export default function CardDetailPage() {
-  const { getCards, deleteCard, lock } = useAuth();
+  const { getCards, deleteCard, lock, updateCard } = useAuth();
   const [, setLocation] = useLocation();
   const [match, params] = useRoute('/card/:id');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -14,6 +14,12 @@ export default function CardDetailPage() {
 
   const cards = getCards();
   const card: Card | undefined = cards.find((c) => c.id === params?.id);
+
+  useEffect(() => {
+    if (card) {
+      updateCard(card.id, { lastViewedAt: Date.now() });
+    }
+  }, [card?.id, updateCard]);
 
   if (!match || !card) {
     return (

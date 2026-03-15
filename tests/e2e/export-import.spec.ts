@@ -8,7 +8,7 @@ test.describe('Export/Import Feature', () => {
 
   test('should show export modal when clicking Export', async ({ page }) => {
     await expect(page.locator('h1')).toHaveText('My Cards');
-    await page.locator('button:has-text("Menu")').click();
+    await page.locator('button[aria-label="Menu"]').click();
     await page.locator('button:has-text("Export")').click();
 
     await expect(page.locator('text=Export Cards')).toBeVisible();
@@ -23,7 +23,7 @@ test.describe('Export/Import Feature', () => {
 
   test('should show import modal when clicking Import', async ({ page }) => {
     await expect(page.locator('h1')).toHaveText('My Cards');
-    await page.locator('button:has-text("Menu")').click();
+    await page.locator('button[aria-label="Menu"]').click();
     await page.locator('button:has-text("Import")').click();
 
     await expect(page.locator('text=Import Cards')).toBeVisible();
@@ -34,7 +34,7 @@ test.describe('Export/Import Feature', () => {
   });
 
   test('should close export modal when clicking Cancel', async ({ page }) => {
-    await page.locator('button:has-text("Menu")').click();
+    await page.locator('button[aria-label="Menu"]').click();
     await page.locator('button:has-text("Export")').click();
     await expect(page.locator('text=Export Cards')).toBeVisible();
 
@@ -43,7 +43,7 @@ test.describe('Export/Import Feature', () => {
   });
 
   test('should close import modal when clicking Cancel', async ({ page }) => {
-    await page.locator('button:has-text("Menu")').click();
+    await page.locator('button[aria-label="Menu"]').click();
     await page.locator('button:has-text("Import")').click();
     await expect(page.locator('text=Import Cards')).toBeVisible();
 
@@ -55,7 +55,7 @@ test.describe('Export/Import Feature', () => {
     await addCard(page, 'Test Card 1', '1234567890');
     await addCard(page, 'Test Card 2', '9876543210');
 
-    await page.locator('button:has-text("Menu")').click();
+    await page.locator('button[aria-label="Menu"]').click();
     await page.locator('button:has-text("Export")').click();
 
     const downloadPromise = page.waitForEvent('download');
@@ -68,7 +68,7 @@ test.describe('Export/Import Feature', () => {
   test('should export cards as encrypted ZIP with password', async ({ page }) => {
     await addCard(page, 'Encrypted Card', '111222333');
 
-    await page.locator('button:has-text("Menu")').click();
+    await page.locator('button[aria-label="Menu"]').click();
     await page.locator('button:has-text("Export")').click();
 
     const passwordInput = page
@@ -90,7 +90,7 @@ test.describe('Export/Import Feature', () => {
   test('should show error when passwords do not match', async ({ page }) => {
     await addCard(page, 'Test Card', '1234567890');
 
-    await page.locator('button:has-text("Menu")').click();
+    await page.locator('button[aria-label="Menu"]').click();
     await page.locator('button:has-text("Export")').click();
 
     const passwordInput = page
@@ -108,7 +108,7 @@ test.describe('Export/Import Feature', () => {
   });
 
   test('should show error for non-ZIP file on import', async ({ page }) => {
-    await page.locator('button:has-text("Menu")').click();
+    await page.locator('button[aria-label="Menu"]').click();
     await page.locator('button:has-text("Import")').click();
 
     const fileContent = 'not a zip file';
@@ -131,7 +131,7 @@ test.describe('Export/Import Feature', () => {
     await page.reload();
     await completeSetup(page, 'newpassword123');
 
-    await page.locator('button:has-text("Menu")').click();
+    await page.locator('button[aria-label="Menu"]').click();
     await page.locator('button:has-text("Import")').click();
 
     await page.setInputFiles('input[type="file"]', {
@@ -142,8 +142,10 @@ test.describe('Export/Import Feature', () => {
 
     await page.locator('button:has-text("Preview Import")').click();
 
-    await expect(page.locator('.import-card-name').first()).toHaveText('Exported Card 1');
-    await expect(page.locator('.import-card-name').nth(1)).toHaveText('Exported Card 2');
+    await page.waitForSelector('.import-card-name', { timeout: 5000 });
+    const importNames = await page.locator('.import-card-name').allTextContents();
+    expect(importNames).toContain('Exported Card 1');
+    expect(importNames).toContain('Exported Card 2');
 
     await page.locator('button:has-text("Import 2 Cards")').click();
 
@@ -151,14 +153,15 @@ test.describe('Export/Import Feature', () => {
     const cards = await page.locator('.card-item').count();
     expect(cards).toBe(2);
 
-    await expect(page.locator('.card-name').first()).toHaveText('Exported Card 1');
-    await expect(page.locator('.card-name').nth(1)).toHaveText('Exported Card 2');
+    const cardNames = await page.locator('.card-name').allTextContents();
+    expect(cardNames).toContain('Exported Card 1');
+    expect(cardNames).toContain('Exported Card 2');
   });
 
   test('should import cards with password from encrypted export', async ({ page }) => {
     await addCard(page, 'Secret Card', '9999999999');
 
-    await page.locator('button:has-text("Menu")').click();
+    await page.locator('button[aria-label="Menu"]').click();
     await page.locator('button:has-text("Export")').click();
 
     const passwordInput = page
@@ -182,7 +185,7 @@ test.describe('Export/Import Feature', () => {
     await page.reload();
     await completeSetup(page, 'newpassword123');
 
-    await page.locator('button:has-text("Menu")').click();
+    await page.locator('button[aria-label="Menu"]').click();
     await page.locator('button:has-text("Import")').click();
 
     await page.setInputFiles('input[type="file"]', {
@@ -217,7 +220,7 @@ async function addCard(page: import('@playwright/test').Page, name: string, numb
 }
 
 async function exportAndGetZipBuffer(page: import('@playwright/test').Page): Promise<Buffer> {
-  await page.locator('button:has-text("Menu")').click();
+  await page.locator('button[aria-label="Menu"]').click();
   await page.locator('button:has-text("Export")').click();
 
   const downloadPromise = page.waitForEvent('download');

@@ -742,3 +742,24 @@ body {
   font-size: 11px;
   color: #495057;
 }
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #333;
+}
+
+.icon-btn:hover {
+  background: #f0f0f0;
+}
+
+.icon-btn:active {
+  background: #e0e0e0;
+}
