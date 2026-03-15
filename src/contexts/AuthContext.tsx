@@ -1,12 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLocation } from 'wouter';
 import type { AppData } from '../types/card';
 import { decrypt, deriveKey, encrypt, generateSalt } from '../utils/crypto';
@@ -57,18 +49,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, [setLocation]);
 
-  const lock = useCallback(
-    (currentRoute?: string) => {
-      if (currentRoute) {
-        originalRouteRef.current = currentRoute;
-      }
-      setIsUnlocked(false);
-      setCards([]);
-      keyRef.current = null;
-      setLocation('/unlock', { replace: true });
-    },
-    [setLocation],
-  );
+  const lock = (currentRoute?: string) => {
+    if (currentRoute) {
+      originalRouteRef.current = currentRoute;
+    }
+    setIsUnlocked(false);
+    setCards([]);
+    keyRef.current = null;
+    setLocation('/unlock', { replace: true });
+  };
 
   useEffect(() => {
     const handleActivity = () => {
@@ -150,7 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setCards(data.cards);
       setIsUnlocked(true);
       setLocation(originalRouteRef.current);
-    } catch (_) {
+    } catch {
       setError('Incorrect password');
       keyRef.current = null;
     }
