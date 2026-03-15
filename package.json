@@ -11,7 +11,10 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "preview": "vite preview",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "test": "pnpm test:e2e",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "idb": "^8.0.3",
@@ -24,6 +27,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
+    "@playwright/test": "^1.51.0",
     "@rolldown/plugin-babel": "^0.2.0",
     "@types/babel__core": "^7.20.5",
     "@types/node": "^24.12.0",
@@ -34,6 +38,7 @@
     "lefthook": "^2.1.4",
     "oxfmt": "^0.40.0",
     "oxlint": "^1.55.0",
+    "playwright": "^1.51.0",
     "typescript": "~5.9.3",
     "vite": "^8.0.0"
   },
