@@ -17,6 +17,7 @@ interface AuthContextType {
   addCard: (card: Omit<import('../types/card').Card, 'id' | 'createdAt'>) => Promise<void>;
   updateCard: (id: string, card: Partial<import('../types/card').Card>) => Promise<void>;
   deleteCard: (id: string) => Promise<void>;
+  importCards: (cards: Omit<import('../types/card').Card, 'id' | 'createdAt'>[]) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -162,6 +163,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await saveCards([...cards, newCard]);
   };
 
+  const importCards = async (
+    importedCards: Omit<import('../types/card').Card, 'id' | 'createdAt'>[],
+  ) => {
+    const newCards = importedCards.map((card) => ({
+      ...card,
+      id: crypto.randomUUID(),
+      createdAt: Date.now(),
+    }));
+    await saveCards([...cards, ...newCards]);
+  };
+
   const updateCard = async (id: string, updates: Partial<import('../types/card').Card>) => {
     const newCards = cards.map((c) => (c.id === id ? { ...c, ...updates } : c));
     await saveCards(newCards);
@@ -187,6 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         addCard,
         updateCard,
         deleteCard,
+        importCards,
       }}
     >
       {children}

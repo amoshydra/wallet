@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@zip.js/zip.js':
+        specifier: ^2.8.23
+        version: 2.8.23
       idb:
         specifier: ^8.0.3
         version: 8.0.3
@@ -563,6 +566,10 @@ packages:
         optional: true
       babel-plugin-react-compiler:
         optional: true
+
+  '@zip.js/zip.js@2.8.23':
+    resolution: {integrity: sha512-RB+RLnxPJFPrGvQ9rgO+4JOcsob6lD32OcF0QE0yg24oeW9q8KnTTNlugcDaIveEcCbclobJcZP+fLQ++sH0bw==}
+    engines: {bun: '>=0.7.0', deno: '>=1.0.0', node: '>=18.0.0'}
 
   babel-plugin-react-compiler@1.0.0:
     resolution: {integrity: sha512-Ixm8tFfoKKIPYdCCKYTsqv+Fd4IJ0DQqMyEimo+pxUOMUR9cVPlwTrFt9Avu+3cb6Zp3mAzl+t1MrG2fxxKsxw==}
@@ -1332,6 +1339,8 @@ snapshots:
     optionalDependencies:
       '@rolldown/plugin-babel': 0.2.1(@babel/core@7.29.0)(rolldown@1.0.0-rc.9)(vite@8.0.0(@types/node@24.12.0))
       babel-plugin-react-compiler: 1.0.0
+
+  '@zip.js/zip.js@2.8.23': {}
 
   babel-plugin-react-compiler@1.0.0:
     dependencies:

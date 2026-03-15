@@ -591,3 +591,154 @@ body {
   cursor: pointer;
   font-size: 16px;
 }
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 150px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+}
+
+.dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+.dropdown-item:active {
+  background: #eee;
+}
+
+.modal-export,
+.modal-import {
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.csv-preview {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.csv-preview label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #555;
+}
+
+.csv-preview pre {
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-size: 12px;
+  margin: 0;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.csv-preview .preview-note {
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+.password-input-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  flex: 1;
+}
+
+.form-hint {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.import-errors {
+  margin: 12px 0;
+}
+
+.import-preview {
+  margin: 16px 0;
+}
+
+.import-preview label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #555;
+}
+
+.import-card-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.import-card-item {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.import-card-item:last-child {
+  border-bottom: none;
+}
+
+.import-card-name {
+  font-weight: 500;
+}
+
+.import-card-number {
+  font-family: monospace;
+  font-size: 12px;
+  color: #666;
+}
+
+.import-card-badge {
+  background: #e9ecef;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  color: #495057;
+}

@@ -1,22 +1,43 @@
+import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '../contexts/AuthContext';
+import DropdownMenu from '../components/DropdownMenu';
+import ExportModal from '../components/ExportModal';
+import ImportModal from '../components/ImportModal';
 import type { Card } from '../types/card';
 
 export default function HomePage() {
-  const { getCards, lock } = useAuth();
+  const { getCards, lock, importCards } = useAuth();
   const [, setLocation] = useLocation();
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const cards = getCards();
+
+  const handleImport = async (importedCards: Omit<Card, 'id' | 'createdAt'>[]) => {
+    await importCards(importedCards);
+  };
+
+  const dropdownItems = [
+    { label: 'Export', onClick: () => setShowExportModal(true) },
+    { label: 'Import', onClick: () => setShowImportModal(true) },
+  ];
 
   return (
     <div className="page">
       <header className="header">
         <h1>My Cards</h1>
-        <button
-          onClick={() => lock()}
-          className="btn-secondary"
-        >
-          Lock
-        </button>
+        <div className="header-actions">
+          <DropdownMenu
+            trigger={<button className="btn-secondary">Menu</button>}
+            items={dropdownItems}
+          />
+          <button
+            onClick={() => lock()}
+            className="btn-secondary"
+          >
+            Lock
+          </button>
+        </div>
       </header>
 
       {cards.length === 0 ? (
@@ -63,6 +84,20 @@ export default function HomePage() {
       >
         +
       </button>
+
+      {showExportModal && (
+        <ExportModal
+          cards={cards}
+          onClose={() => setShowExportModal(false)}
+        />
+      )}
+
+      {showImportModal && (
+        <ImportModal
+          onImport={handleImport}
+          onClose={() => setShowImportModal(false)}
+        />
+      )}
     </div>
   );
 }
