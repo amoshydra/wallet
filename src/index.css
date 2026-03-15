@@ -403,6 +403,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  image-rendering: pixelated;
 }
 
 .code-display.full-width {
@@ -484,10 +485,10 @@ body {
   overflow-x: auto;
 }
 
-.barcode-wrapper canvas {
+.barcode-wrapper canvas,
+.barcode-wrapper svg {
   width: 100%;
   height: auto;
-  image-rendering: pixelated;
 }
 
 .code-tabs {
