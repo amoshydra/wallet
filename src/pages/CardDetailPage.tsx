@@ -1,17 +1,17 @@
-import { useState } from "react";
-import { useLocation, useRoute } from "wouter";
-import { useAuth } from "../contexts/AuthContext";
-import CodeDisplay from "../components/CodeDisplay";
-import type { Card } from "../types/card";
+import { useState } from 'react';
+import { useLocation, useRoute } from 'wouter';
+import { useAuth } from '../contexts/AuthContext';
+import CodeDisplay from '../components/CodeDisplay';
+import type { Card } from '../types/card';
 
 export default function CardDetailPage() {
   const { getCards, deleteCard, lock } = useAuth();
   const [, setLocation] = useLocation();
-  const [match, params] = useRoute("/card/:id");
+  const [match, params] = useRoute('/card/:id');
   const [showNumber, setShowNumber] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [copied, setCopied] = useState(false);
-  
+
   const cards = getCards();
   const card: Card | undefined = cards.find((c) => c.id === params?.id);
 
@@ -19,7 +19,10 @@ export default function CardDetailPage() {
     return (
       <div className="page">
         <p>Card not found</p>
-        <button onClick={() => setLocation("/")} className="btn-primary">
+        <button
+          onClick={() => setLocation('/')}
+          className="btn-primary"
+        >
           Go Home
         </button>
       </div>
@@ -36,70 +39,86 @@ export default function CardDetailPage() {
 
   const handleDelete = async () => {
     await deleteCard(card.id);
-    setLocation("/");
+    setLocation('/');
   };
 
   return (
     <div className="page">
       <header className="header">
-        <button onClick={() => setLocation("/")} className="btn-text">
+        <button
+          onClick={() => setLocation('/')}
+          className="btn-text"
+        >
           ← Back
         </button>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => setLocation(`/edit/${card.id}`)} className="btn-secondary">
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => setLocation(`/edit/${card.id}`)}
+            className="btn-secondary"
+          >
             Edit
           </button>
-          <button onClick={() => lock()} className="btn-secondary">
+          <button
+            onClick={() => lock()}
+            className="btn-secondary"
+          >
             Lock
           </button>
         </div>
       </header>
 
       {card.number && (
-        <CodeDisplay 
-          value={card.number} 
+        <CodeDisplay
+          value={card.number}
           codeType={card.codeType}
           showSelector={false}
           fullWidth={true}
         />
       )}
 
-      <div className="card-detail" style={{ marginTop: 20 }}>
+      <div
+        className="card-detail"
+        style={{ marginTop: 20 }}
+      >
         {card.imageData ? (
-          <img src={card.imageData} alt={card.name} className="card-detail-image" />
+          <img
+            src={card.imageData}
+            alt={card.name}
+            className="card-detail-image"
+          />
         ) : (
           <div className="card-detail-placeholder">
             <span>{card.name[0].toUpperCase()}</span>
           </div>
         )}
-        
+
         <div className="card-detail-info">
           <h2>{card.name}</h2>
-          
+
           {card.number && (
             <div className="card-number-container">
               <span className="card-number-label">Card Number</span>
               <div className="card-number-row">
-                <span 
+                <span
                   className="card-number"
                   onClick={handleCopy}
                   title="Click to copy"
                 >
-                  {showNumber ? card.number : "•".repeat(card.number.length)}
+                  {showNumber ? card.number : '•'.repeat(card.number.length)}
                 </span>
-                <button 
+                <button
                   onClick={() => setShowNumber(!showNumber)}
                   className="btn-text"
                 >
-                  {showNumber ? "Hide" : "Show"}
+                  {showNumber ? 'Hide' : 'Show'}
                 </button>
               </div>
               {copied && <span className="copied-text">Copied!</span>}
             </div>
           )}
-          
+
           <div className="card-actions">
-            <button 
+            <button
               onClick={() => setShowDeleteConfirm(true)}
               className="btn-danger"
             >
@@ -108,20 +127,23 @@ export default function CardDetailPage() {
           </div>
         </div>
       </div>
-      
+
       {showDeleteConfirm && (
         <div className="modal-overlay">
           <div className="modal">
             <h3>Delete Card?</h3>
             <p>Are you sure you want to delete "{card.name}"? This cannot be undone.</p>
             <div className="modal-actions">
-              <button 
+              <button
                 onClick={() => setShowDeleteConfirm(false)}
                 className="btn-secondary"
               >
                 Cancel
               </button>
-              <button onClick={handleDelete} className="btn-danger">
+              <button
+                onClick={handleDelete}
+                className="btn-danger"
+              >
                 Delete
               </button>
             </div>

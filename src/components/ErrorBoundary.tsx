@@ -1,4 +1,4 @@
-import { Component, type ReactNode } from "react";
+import { Component, type ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -30,7 +30,7 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div className="error-boundary">
           <div className="error-content">
             <h2>Something went wrong</h2>
-            <p>{this.state.error?.message || "An unexpected error occurred"}</p>
+            <p>{this.state.error?.message || 'An unexpected error occurred'}</p>
             <button onClick={() => window.location.reload()}>Reload App</button>
           </div>
         </div>

@@ -1,26 +1,26 @@
-import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function SetupPage() {
   const { setupPassword, error } = useAuth();
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [localError, setLocalError] = useState("");
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [localError, setLocalError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLocalError("");
-    
+    setLocalError('');
+
     if (password.length < 8) {
-      setLocalError("Password must be at least 8 characters");
+      setLocalError('Password must be at least 8 characters');
       return;
     }
     if (password !== confirm) {
-      setLocalError("Passwords do not match");
+      setLocalError('Passwords do not match');
       return;
     }
-    
+
     setIsSubmitting(true);
     try {
       await setupPassword(password);
@@ -34,10 +34,10 @@ export default function SetupPage() {
       <div className="setup-container">
         <h1>Create Password</h1>
         <p className="warning">
-          All your data is encrypted with your password. 
+          All your data is encrypted with your password.
           <strong> If you forget your password, your data cannot be recovered.</strong>
         </p>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="password">Password</label>
@@ -50,7 +50,7 @@ export default function SetupPage() {
               autoComplete="new-password"
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="confirm">Confirm Password</label>
             <input
@@ -62,13 +62,15 @@ export default function SetupPage() {
               autoComplete="new-password"
             />
           </div>
-          
-          {(localError || error) && (
-            <p className="error">{localError || error}</p>
-          )}
-          
-          <button type="submit" className="btn-primary" disabled={isSubmitting}>
-            {isSubmitting ? "Setting up..." : "Create Password & Start"}
+
+          {(localError || error) && <p className="error">{localError || error}</p>}
+
+          <button
+            type="submit"
+            className="btn-primary"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Setting up...' : 'Create Password & Start'}
           </button>
         </form>
       </div>

@@ -31,13 +31,15 @@ body {
   font-weight: 600;
 }
 
-.setup-container, .unlock-container {
+.setup-container,
+.unlock-container {
   max-width: 400px;
   margin: 60px auto;
   text-align: center;
 }
 
-.setup-container h1, .unlock-container h1 {
+.setup-container h1,
+.unlock-container h1 {
   margin-bottom: 16px;
 }
 
@@ -155,7 +157,7 @@ body {
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: transform 0.2s;
 }
@@ -211,7 +213,7 @@ body {
   color: white;
   font-size: 32px;
   border: none;
-  box-shadow: 0 4px 12px rgba(0,123,255,0.4);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -222,7 +224,7 @@ body {
   background: white;
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .image-preview {
@@ -236,7 +238,7 @@ body {
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card-detail-image {
@@ -323,7 +325,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -391,7 +393,7 @@ body {
   background: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   min-height: 60vh;
   display: flex;
   flex-direction: column;
@@ -574,7 +576,7 @@ body {
 }
 
 .error-content button {
-  background: #007AFF;
+  background: #007aff;
   color: white;
   border: none;
   padding: 12px 24px;

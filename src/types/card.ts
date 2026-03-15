@@ -1,4 +1,17 @@
-export type CodeType = "qr" | "code128" | "code39" | "ean13" | "ean8" | "upc" | "itf14" | "codabar" | "code93" | "itf" | "upca" | "upce" | "pdf417";
+export type CodeType =
+  | 'qr'
+  | 'code128'
+  | 'code39'
+  | 'ean13'
+  | 'ean8'
+  | 'upc'
+  | 'itf14'
+  | 'codabar'
+  | 'code93'
+  | 'itf'
+  | 'upca'
+  | 'upce'
+  | 'pdf417';
 
 export interface Card {
   id: string;

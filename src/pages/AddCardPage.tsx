@@ -1,20 +1,20 @@
-import { useState, useEffect } from "react";
-import { useLocation, useRoute } from "wouter";
-import { useAuth } from "../contexts/AuthContext";
-import CodeDisplay from "../components/CodeDisplay";
-import type { Card, CodeType } from "../types/card";
+import { useState, useEffect } from 'react';
+import { useLocation, useRoute } from 'wouter';
+import { useAuth } from '../contexts/AuthContext';
+import CodeDisplay from '../components/CodeDisplay';
+import type { Card, CodeType } from '../types/card';
 
 export default function AddCardPage() {
   const { addCard, updateCard, getCards } = useAuth();
   const [, setLocation] = useLocation();
-  const [match, params] = useRoute("/edit/:id");
-  
+  const [match, params] = useRoute('/edit/:id');
+
   const cardId = match ? params?.id : undefined;
   const isEditing = !!cardId;
-  
-  const [name, setName] = useState("");
-  const [number, setNumber] = useState("");
-  const [codeType, setCodeType] = useState<CodeType>("qr");
+
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
+  const [codeType, setCodeType] = useState<CodeType>('qr');
   const [imageData, setImageData] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -24,8 +24,8 @@ export default function AddCardPage() {
       const card = cards.find((c: Card) => c.id === cardId);
       if (card) {
         setName(card.name);
-        setNumber(card.number || "");
-        setCodeType(card.codeType || "qr");
+        setNumber(card.number || '');
+        setCodeType(card.codeType || 'qr');
         setImageData(card.imageData || null);
       }
     }
@@ -45,7 +45,7 @@ export default function AddCardPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !number.trim()) return;
-    
+
     setIsSubmitting(true);
     try {
       if (isEditing && cardId) {
@@ -63,7 +63,7 @@ export default function AddCardPage() {
           codeType,
           imageData: imageData || undefined,
         });
-        setLocation("/");
+        setLocation('/');
       }
     } finally {
       setIsSubmitting(false);
@@ -73,13 +73,19 @@ export default function AddCardPage() {
   return (
     <div className="page">
       <header className="Header">
-        <button onClick={() => setLocation("/")} className="btn-text">
+        <button
+          onClick={() => setLocation('/')}
+          className="btn-text"
+        >
           ← Back
         </button>
-        <h1>{isEditing ? "Edit Card" : "Add Card"}</h1>
+        <h1>{isEditing ? 'Edit Card' : 'Add Card'}</h1>
       </header>
-      
-      <form onSubmit={handleSubmit} className="form">
+
+      <form
+        onSubmit={handleSubmit}
+        className="form"
+      >
         <div className="form-group">
           <label htmlFor="name">Name *</label>
           <input
@@ -105,15 +111,15 @@ export default function AddCardPage() {
         </div>
 
         <div className="form-group">
-          <CodeDisplay 
-            value={number || "Enter card number"} 
-            codeType={codeType} 
+          <CodeDisplay
+            value={number || 'Enter card number'}
+            codeType={codeType}
             onCodeTypeChange={setCodeType}
-            showSelector={true} 
-            standalone={true} 
+            showSelector={true}
+            standalone={true}
           />
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="image">Image (optional)</label>
           <input
@@ -123,16 +129,20 @@ export default function AddCardPage() {
             onChange={handleImageChange}
           />
           {imageData && (
-            <img src={imageData} alt="Preview" className="image-preview" />
+            <img
+              src={imageData}
+              alt="Preview"
+              className="image-preview"
+            />
           )}
         </div>
-        
-        <button 
-          type="submit" 
+
+        <button
+          type="submit"
           className="btn-primary"
           disabled={isSubmitting || !name.trim() || !number.trim()}
         >
-          {isSubmitting ? "Saving..." : isEditing ? "Update Card" : "Save Card"}
+          {isSubmitting ? 'Saving...' : isEditing ? 'Update Card' : 'Save Card'}
         </button>
       </form>
     </div>

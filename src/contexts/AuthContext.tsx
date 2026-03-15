@@ -1,8 +1,16 @@
-import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
-import { useLocation } from "wouter";
-import type { AppData } from "../types/card";
-import { deriveKey, encrypt, decrypt, generateSalt } from "../utils/crypto";
-import { getSalt, setSalt, getEncryptedData, setEncryptedData, hasPassword } from "../utils/db";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  type ReactNode,
+} from 'react';
+import { useLocation } from 'wouter';
+import type { AppData } from '../types/card';
+import { deriveKey, encrypt, decrypt, generateSalt } from '../utils/crypto';
+import { getSalt, setSalt, getEncryptedData, setEncryptedData, hasPassword } from '../utils/db';
 
 interface AuthContextType {
   isUnlocked: boolean;
@@ -12,10 +20,10 @@ interface AuthContextType {
   setupPassword: (password: string) => Promise<void>;
   unlock: (password: string) => Promise<void>;
   lock: () => void;
-  getCards: () => AppData["cards"];
-  saveCards: (cards: AppData["cards"]) => Promise<void>;
-  addCard: (card: Omit<import("../types/card").Card, "id" | "createdAt">) => Promise<void>;
-  updateCard: (id: string, card: Partial<import("../types/card").Card>) => Promise<void>;
+  getCards: () => AppData['cards'];
+  saveCards: (cards: AppData['cards']) => Promise<void>;
+  addCard: (card: Omit<import('../types/card').Card, 'id' | 'createdAt'>) => Promise<void>;
+  updateCard: (id: string, card: Partial<import('../types/card').Card>) => Promise<void>;
   deleteCard: (id: string) => Promise<void>;
 }
 
@@ -30,11 +38,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isFirstTime, setIsFirstTime] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cards, setCards] = useState<import("../types/card").Card[]>([]);
+  const [cards, setCards] = useState<import('../types/card').Card[]>([]);
   const keyRef = useRef<CryptoKey | null>(null);
   const lastActivityRef = useRef<number>(Date.now());
   const checkIntervalRef = useRef<number | null>(null);
-  const originalRouteRef = useRef<string>("/");
+  const originalRouteRef = useRef<string>('/');
 
   useEffect(() => {
     (async () => {
@@ -42,36 +50,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsFirstTime(!hasPwd);
       setIsLoading(false);
       if (!hasPwd) {
-        setLocation("/setup", { replace: true });
+        setLocation('/setup', { replace: true });
       } else {
-        setLocation("/unlock", { replace: true });
+        setLocation('/unlock', { replace: true });
       }
     })();
   }, [setLocation]);
 
-  const lock = useCallback((currentRoute?: string) => {
-    if (currentRoute) {
-      originalRouteRef.current = currentRoute;
-    }
-    setIsUnlocked(false);
-    setCards([]);
-    keyRef.current = null;
-    setLocation("/unlock", { replace: true });
-  }, [setLocation]);
+  const lock = useCallback(
+    (currentRoute?: string) => {
+      if (currentRoute) {
+        originalRouteRef.current = currentRoute;
+      }
+      setIsUnlocked(false);
+      setCards([]);
+      keyRef.current = null;
+      setLocation('/unlock', { replace: true });
+    },
+    [setLocation],
+  );
 
   useEffect(() => {
     const handleActivity = () => {
       lastActivityRef.current = Date.now();
     };
 
-    window.addEventListener("click", handleActivity);
-    window.addEventListener("touchstart", handleActivity);
-    window.addEventListener("keydown", handleActivity);
+    window.addEventListener('click', handleActivity);
+    window.addEventListener('touchstart', handleActivity);
+    window.addEventListener('keydown', handleActivity);
 
     return () => {
-      window.removeEventListener("click", handleActivity);
-      window.removeEventListener("touchstart", handleActivity);
-      window.removeEventListener("keydown", handleActivity);
+      window.removeEventListener('click', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
     };
   }, []);
 
@@ -98,19 +109,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await setSalt(salt);
       const key = await deriveKey(password, salt);
       keyRef.current = key;
-      
+
       const emptyData: AppData = { cards: [] };
       const encrypted = await encrypt(JSON.stringify(emptyData), key);
       await setEncryptedData(encrypted.encrypted, encrypted.iv);
-      
+
       setIsFirstTime(false);
       setIsUnlocked(true);
       setCards([]);
-      setLocation("/");
+      setLocation('/');
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Unknown error";
+      const message = e instanceof Error ? e.message : 'Unknown error';
       setError(`Failed to setup password: ${message}`);
-      console.error("Setup error:", e);
+      console.error('Setup error:', e);
     }
   };
 
@@ -119,13 +130,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const salt = await getSalt();
       if (!salt) {
-        setError("No password set");
+        setError('No password set');
         return;
       }
-      
+
       const key = await deriveKey(password, salt);
       keyRef.current = key;
-      
+
       const stored = await getEncryptedData();
       if (!stored) {
         setIsUnlocked(true);
@@ -133,19 +144,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLocation(originalRouteRef.current);
         return;
       }
-      
+
       const decrypted = await decrypt(stored.encrypted, stored.iv, key);
       const data: AppData = JSON.parse(decrypted);
       setCards(data.cards);
       setIsUnlocked(true);
       setLocation(originalRouteRef.current);
-    } catch (e) {
-      setError("Incorrect password");
+    } catch (_) {
+      setError('Incorrect password');
       keyRef.current = null;
     }
   };
 
-  const saveCards = async (newCards: import("../types/card").Card[]) => {
+  const saveCards = async (newCards: import('../types/card').Card[]) => {
     if (!keyRef.current) return;
     const data: AppData = { cards: newCards };
     const encrypted = await encrypt(JSON.stringify(data), keyRef.current);
@@ -153,8 +164,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCards(newCards);
   };
 
-  const addCard = async (card: Omit<import("../types/card").Card, "id" | "createdAt">) => {
-    const newCard: import("../types/card").Card = {
+  const addCard = async (card: Omit<import('../types/card').Card, 'id' | 'createdAt'>) => {
+    const newCard: import('../types/card').Card = {
       ...card,
       id: crypto.randomUUID(),
       createdAt: Date.now(),
@@ -162,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await saveCards([...cards, newCard]);
   };
 
-  const updateCard = async (id: string, updates: Partial<import("../types/card").Card>) => {
+  const updateCard = async (id: string, updates: Partial<import('../types/card').Card>) => {
     const newCards = cards.map((c) => (c.id === id ? { ...c, ...updates } : c));
     await saveCards(newCards);
   };
@@ -197,7 +208,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within AuthProvider");
+    throw new Error('useAuth must be used within AuthProvider');
   }
   return context;
 }

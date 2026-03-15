@@ -1,19 +1,19 @@
-import { useState, useEffect } from "react";
-import { useLocation, useRoute } from "wouter";
-import { useAuth } from "../contexts/AuthContext";
-import CodeDisplay from "../components/CodeDisplay";
-import type { Card } from "../types/card";
+import { useState, useEffect } from 'react';
+import { useLocation, useRoute } from 'wouter';
+import { useAuth } from '../contexts/AuthContext';
+import CodeDisplay from '../components/CodeDisplay';
+import type { Card } from '../types/card';
 
 export default function CodePage() {
   const { getCards } = useAuth();
   const [, setLocation] = useLocation();
-  const [match, params] = useRoute("/card/:id/code");
-  
+  const [match, params] = useRoute('/card/:id/code');
+
   const cards = getCards();
   const card: Card | undefined = cards.find((c) => c.id === params?.id);
-  
-  const [codeValue, setCodeValue] = useState(card?.number || "");
-  const [manualValue, setManualValue] = useState("");
+
+  const [codeValue, setCodeValue] = useState(card?.number || '');
+  const [manualValue, setManualValue] = useState('');
   const [useManual, setUseManual] = useState(!card?.number);
 
   useEffect(() => {
@@ -26,7 +26,10 @@ export default function CodePage() {
     return (
       <div className="page">
         <p>Card not found</p>
-        <button onClick={() => setLocation("/")} className="btn-primary">
+        <button
+          onClick={() => setLocation('/')}
+          className="btn-primary"
+        >
           Go Home
         </button>
       </div>
@@ -43,7 +46,10 @@ export default function CodePage() {
   return (
     <div className="page">
       <header className="header">
-        <button onClick={() => setLocation(`/card/${card.id}`)} className="btn-text">
+        <button
+          onClick={() => setLocation(`/card/${card.id}`)}
+          className="btn-text"
+        >
           ← Back
         </button>
         <h1>Show Code</h1>
@@ -51,9 +57,7 @@ export default function CodePage() {
 
       {!codeValue ? (
         <div className="form">
-          <p className="info-text">
-            No card number stored. Enter data to generate code:
-          </p>
+          <p className="info-text">No card number stored. Enter data to generate code:</p>
           <div className="form-group">
             <label htmlFor="manual-code">Data to encode</label>
             <input
@@ -74,18 +78,24 @@ export default function CodePage() {
         </div>
       ) : (
         <>
-          <CodeDisplay value={codeValue} codeType={card.codeType} />
-          
+          <CodeDisplay
+            value={codeValue}
+            codeType={card.codeType}
+          />
+
           <div className="code-actions">
             <button
               onClick={() => setUseManual(!useManual)}
               className="btn-secondary"
             >
-              {useManual ? "Use Card Number" : "Enter Different Data"}
+              {useManual ? 'Use Card Number' : 'Enter Different Data'}
             </button>
-            
+
             {useManual && (
-              <div className="form-group" style={{ marginTop: 16 }}>
+              <div
+                className="form-group"
+                style={{ marginTop: 16 }}
+              >
                 <label htmlFor="manual-input">Enter data</label>
                 <input
                   id="manual-input"
