@@ -476,12 +476,14 @@ body {
 
 .barcode-wrapper {
   max-width: 100%;
+  flex-grow: 1;
   overflow-x: auto;
 }
 
-.barcode-wrapper svg {
-  max-width: 100%;
+.barcode-wrapper canvas {
+  width: 100%;
   height: auto;
+  image-rendering: pixelated;
 }
 
 .code-tabs {

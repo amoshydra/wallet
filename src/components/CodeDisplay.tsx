@@ -49,7 +49,7 @@ function PDF417Canvas({ value, scale = 2 }: { value: string; scale?: number }) {
     if (!canvas) return;
 
     try {
-      PDF417.draw(value, canvas, { scale });
+      PDF417.draw(value, canvas);
       setError(null);
     } catch (e) {
       setError('Failed to generate PDF417');
