@@ -1,11 +1,11 @@
 import { useState, type SubmitEvent } from 'react';
-import { useLocation } from 'wouter';
 import { useAuth } from '../contexts/AuthContext';
+import { useMaskedNavigation } from '../contexts/NavigationContext';
 
 type SetupStep = 'password' | 'passkey-prompt';
 
 export default function SetupPage() {
-  const [, setLocation] = useLocation();
+  const { navigate } = useMaskedNavigation();
   const { setupPassword, setupPasskey, error, canUsePasskey } = useAuth();
   const [step, setStep] = useState<SetupStep>('password');
   const [password, setPassword] = useState('');
@@ -35,7 +35,7 @@ export default function SetupPage() {
         setStep('passkey-prompt');
       } else {
         // Passkey not available, navigate to home
-        setLocation('/');
+        navigate('/');
       }
     } finally {
       setIsSubmitting(false);
@@ -47,7 +47,7 @@ export default function SetupPage() {
     try {
       await setupPasskey();
       // After passkey setup, navigate to home
-      setLocation('/');
+      navigate('/');
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Passkey setup failed';
       setLocalError(message);
@@ -59,7 +59,7 @@ export default function SetupPage() {
   const handleSkipPasskey = () => {
     // User can skip passkey and use password only
     // Navigate to home (already unlocked from password setup)
-    setLocation('/');
+    navigate('/');
   };
 
   if (step === 'passkey-prompt') {

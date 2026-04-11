@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useLocation, useRoute } from 'wouter';
+import { useRoute } from 'wouter';
 import { useAuth } from '../contexts/AuthContext';
+import { useMaskedNavigation } from '../contexts/NavigationContext';
 import CodeDisplay from '../components/CodeDisplay';
 import type { Card } from '../types/card';
 
 export default function CodePage() {
   const { getCards } = useAuth();
-  const [, setLocation] = useLocation();
+  const { navigate } = useMaskedNavigation();
   const [match, params] = useRoute('/card/:id/code');
 
   const cards = getCards();
@@ -27,7 +28,7 @@ export default function CodePage() {
       <div className="page">
         <p>Card not found</p>
         <button
-          onClick={() => setLocation('/')}
+          onClick={() => navigate('/')}
           className="btn-primary"
         >
           Go Home
@@ -47,7 +48,7 @@ export default function CodePage() {
     <div className="page">
       <header className="header">
         <button
-          onClick={() => setLocation(`/card/${card.id}`)}
+          onClick={() => navigate(`/card/${card.id}`)}
           className="btn-text"
         >
           ← Back
@@ -55,68 +56,70 @@ export default function CodePage() {
         <h1>Show Code</h1>
       </header>
 
-      {!codeValue ? (
-        <div className="form">
-          <p className="info-text">No card number stored. Enter data to generate code:</p>
-          <div className="form-group">
-            <label htmlFor="manual-code">Data to encode</label>
-            <input
-              id="manual-code"
-              type="text"
-              value={manualValue}
-              onChange={(e) => setManualValue(e.target.value)}
-              placeholder="Enter data"
-            />
-          </div>
-          <button
-            onClick={handleGenerate}
-            className="btn-primary"
-            disabled={!manualValue.trim()}
-          >
-            Generate Code
-          </button>
-        </div>
-      ) : (
-        <>
-          <CodeDisplay
-            value={codeValue}
-            codeType={card.codeType}
-          />
-
-          <div className="code-actions">
+      <div className="sensitive">
+        {!codeValue ? (
+          <div className="form">
+            <p className="info-text">No card number stored. Enter data to generate code:</p>
+            <div className="form-group">
+              <label htmlFor="manual-code">Data to encode</label>
+              <input
+                id="manual-code"
+                type="text"
+                value={manualValue}
+                onChange={(e) => setManualValue(e.target.value)}
+                placeholder="Enter data"
+              />
+            </div>
             <button
-              onClick={() => setUseManual(!useManual)}
-              className="btn-secondary"
+              onClick={handleGenerate}
+              className="btn-primary"
+              disabled={!manualValue.trim()}
             >
-              {useManual ? 'Use Card Number' : 'Enter Different Data'}
+              Generate Code
             </button>
-
-            {useManual && (
-              <div
-                className="form-group"
-                style={{ marginTop: 16 }}
-              >
-                <label htmlFor="manual-input">Enter data</label>
-                <input
-                  id="manual-input"
-                  type="text"
-                  value={manualValue}
-                  onChange={(e) => setManualValue(e.target.value)}
-                  placeholder="Enter data to encode"
-                />
-                <button
-                  onClick={handleGenerate}
-                  className="btn-primary"
-                  style={{ marginTop: 8 }}
-                  disabled={!manualValue.trim()}
-                >
-                  Update Code
-                </button>
-              </div>
-            )}
           </div>
-        </>
-      )}
+        ) : (
+          <>
+            <CodeDisplay
+              value={codeValue}
+              codeType={card.codeType}
+            />
+
+            <div className="code-actions">
+              <button
+                onClick={() => setUseManual(!useManual)}
+                className="btn-secondary"
+              >
+                {useManual ? 'Use Card Number' : 'Enter Different Data'}
+              </button>
+
+              {useManual && (
+                <div
+                  className="form-group"
+                  style={{ marginTop: 16 }}
+                >
+                  <label htmlFor="manual-input">Enter data</label>
+                  <input
+                    id="manual-input"
+                    type="text"
+                    value={manualValue}
+                    onChange={(e) => setManualValue(e.target.value)}
+                    placeholder="Enter data to encode"
+                  />
+                  <button
+                    onClick={handleGenerate}
+                    className="btn-primary"
+                    style={{ marginTop: 8 }}
+                    disabled={!manualValue.trim()}
+                  >
+                    Update Code
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

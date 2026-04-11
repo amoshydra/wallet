@@ -1,12 +1,13 @@
 import { useEffect, useState, type ChangeEvent, type SubmitEvent } from 'react';
-import { useLocation, useRoute } from 'wouter';
+import { useRoute } from 'wouter';
 import CodeDisplay from '../components/CodeDisplay';
 import { useAuth } from '../contexts/AuthContext';
+import { useMaskedNavigation } from '../contexts/NavigationContext';
 import type { Card, CodeType } from '../types/card';
 
 export default function AddCardPage() {
   const { addCard, updateCard, getCards } = useAuth();
-  const [, setLocation] = useLocation();
+  const { navigate } = useMaskedNavigation();
   const [match, params] = useRoute('/edit/:id');
 
   const cardId = match ? params?.id : undefined;
@@ -55,7 +56,7 @@ export default function AddCardPage() {
           codeType,
           imageData: imageData || undefined,
         });
-        setLocation(`/card/${cardId}`);
+        navigate(`/card/${cardId}`);
       } else {
         await addCard({
           name: name.trim(),
@@ -63,7 +64,7 @@ export default function AddCardPage() {
           codeType,
           imageData: imageData || undefined,
         });
-        setLocation('/');
+        navigate('/');
       }
     } finally {
       setIsSubmitting(false);
@@ -74,7 +75,7 @@ export default function AddCardPage() {
     <div className="page">
       <header className="Header">
         <button
-          onClick={() => setLocation('/')}
+          onClick={() => navigate('/')}
           className="btn-text"
         >
           ← Back
@@ -84,7 +85,7 @@ export default function AddCardPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="form"
+        className="form sensitive"
       >
         <div className="form-group">
           <label htmlFor="name">Name *</label>

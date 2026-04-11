@@ -28,6 +28,7 @@ interface AuthContextType {
   isUnlocked: boolean;
   isLoading: boolean;
   isFirstTime: boolean;
+  isHidden: boolean;
   error: string | null;
   hasPasskey: boolean;
   canUsePasskey: boolean;
@@ -50,10 +51,11 @@ const AUTO_LOCK_MS = 5 * 60 * 1000;
 const CHECK_INTERVAL_MS = 30000;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isFirstTime, setIsFirstTime] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasPasskey, setHasPasskey] = useState(false);
   const [canUsePasskeyState, setCanUsePasskeyState] = useState(false);
@@ -86,6 +88,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, [setLocation]);
 
+  // Lock when user navigates to /unlock
+  useEffect(() => {
+    if (location === '/unlock' && isUnlocked) {
+      setIsUnlocked(false);
+      setCards([]);
+      masterKeyRef.current = null;
+      setError(null);
+    }
+  }, [location, isUnlocked]);
+
   const lock = (currentRoute?: string) => {
     if (currentRoute) {
       originalRouteRef.current = currentRoute;
@@ -112,6 +124,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.removeEventListener('keydown', handleActivity);
     };
   }, []);
+
+  useEffect(() => {
+    const handleBlur = () => {
+      // Window lost focus - user might be switching apps
+      setIsHidden(true);
+    };
+
+    const handleFocus = () => {
+      // Window gained focus
+      setIsHidden(false);
+      // Check if we should lock when returning to foreground
+      if (isUnlocked && Date.now() - lastActivityRef.current > AUTO_LOCK_MS) {
+        lock();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      const hidden = document.visibilityState === 'hidden';
+      setIsHidden(hidden);
+
+      if (!hidden) {
+        // Check if we should lock when returning to foreground
+        if (isUnlocked && Date.now() - lastActivityRef.current > AUTO_LOCK_MS) {
+          lock();
+        }
+      }
+    };
+
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isUnlocked]);
 
   useEffect(() => {
     if (!isUnlocked) return;
@@ -349,6 +399,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isUnlocked,
         isLoading,
         isFirstTime,
+        isHidden,
         error,
         hasPasskey,
         canUsePasskey: canUsePasskeyState,

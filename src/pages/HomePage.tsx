@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'wouter';
 import { ArrowUpDown, MoreVertical } from 'lucide-react';
 import DropdownMenu from '../components/DropdownMenu';
 import ExportModal from '../components/ExportModal';
 import ImportModal from '../components/ImportModal';
 import { useAuth } from '../contexts/AuthContext';
+import { useMaskedNavigation } from '../contexts/NavigationContext';
 import type { Card } from '../types/card';
 import {
   getSortPreference,
@@ -15,8 +15,8 @@ import {
 } from '../utils/sort';
 
 export default function HomePage() {
-  const { getCards, lock, importCards } = useAuth();
-  const [, setLocation] = useLocation();
+  const { getCards, importCards } = useAuth();
+  const { navigate } = useMaskedNavigation();
   const [showExportModal, setShowExportModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('recentlyViewed');
@@ -75,7 +75,7 @@ export default function HomePage() {
             items={menuItems}
           />
           <button
-            onClick={() => lock()}
+            onClick={() => navigate('/unlock')}
             className="btn-secondary"
           >
             Lock
@@ -87,23 +87,23 @@ export default function HomePage() {
         <div className="empty-state">
           <p>No cards yet</p>
           <button
-            onClick={() => setLocation('/add')}
+            onClick={() => navigate('/add')}
             className="btn-primary"
           >
             Add Your First Card
           </button>
         </div>
       ) : (
-        <div className="card-grid">
+        <div className="card-grid sensitive">
           {sortedCards.map((card: Card) => (
             <div
               key={card.id}
               className="card-item"
-              onClick={() => setLocation(`/card/${card.id}`)}
+              onClick={() => navigate(`/card/${card.id}`)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  setLocation(`/card/${card.id}`);
+                  navigate(`/card/${card.id}`);
                 }
               }}
               role="button"
@@ -131,24 +131,28 @@ export default function HomePage() {
 
       <button
         className="fab"
-        onClick={() => setLocation('/add')}
+        onClick={() => navigate('/add')}
         title="Add Card"
       >
         +
       </button>
 
       {showExportModal && (
-        <ExportModal
-          cards={sortedCards}
-          onClose={() => setShowExportModal(false)}
-        />
+        <div className="sensitive">
+          <ExportModal
+            cards={sortedCards}
+            onClose={() => setShowExportModal(false)}
+          />
+        </div>
       )}
 
       {showImportModal && (
-        <ImportModal
-          onImport={handleImport}
-          onClose={() => setShowImportModal(false)}
-        />
+        <div className="sensitive">
+          <ImportModal
+            onImport={handleImport}
+            onClose={() => setShowImportModal(false)}
+          />
+        </div>
       )}
     </div>
   );

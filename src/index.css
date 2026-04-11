@@ -955,3 +955,13 @@ body {
 .icon-btn:active {
   background: var(--bg-icon-btn-active);
 }
+
+.app-container {
+  min-height: 100vh;
+}
+
+/* When mask is active, hide all sensitive content */
+.mask-sensitive .sensitive {
+  opacity: 0;
+  pointer-events: none;
+}
