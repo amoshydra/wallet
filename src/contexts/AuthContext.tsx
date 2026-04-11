@@ -77,9 +77,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Check if passkey is configured
+      // Check if passkey is configured (has credential ID AND device-encrypted key)
       const encryptedKey = await getEncryptedMasterKey();
-      setHasPasskey(!!encryptedKey?.passkeyCredentialId);
+      setHasPasskey(!!(encryptedKey?.passkeyCredentialId && encryptedKey?.deviceEncrypted));
       setIsFirstTime(false);
       setIsLoading(false);
       setLocation('/unlock', { replace: true });
@@ -137,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const passwordKey = await deriveKey(password, salt);
       const { encrypted, iv } = await encryptMasterKey(masterKey, passwordKey);
 
-      // Store encrypted master key with salt (without passkey initially)
+      // Store master key encrypted with password (device encryption will be added later if passkey is set up)
       await setEncryptedMasterKey(encrypted, iv, salt);
 
       const emptyData: AppData = { cards: [] };
@@ -163,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('Not authenticated');
       }
 
-      // Get current encrypted key to preserve the salt
+      // Get current encrypted key to preserve the salt and password-encrypted data
       const currentKey = await getEncryptedMasterKey();
       if (!currentKey) {
         throw new Error('No master key found');
@@ -178,10 +178,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Encrypt master key with device key
       const deviceKeyCrypto = await deriveKeyFromDeviceKey(deviceKey);
-      const { encrypted, iv } = await encryptMasterKey(masterKeyRef.current, deviceKeyCrypto);
+      const { encrypted: deviceEncrypted, iv: deviceIv } = await encryptMasterKey(
+        masterKeyRef.current,
+        deviceKeyCrypto,
+      );
 
-      // Store encrypted master key with salt and passkey credential ID
-      await setEncryptedMasterKey(encrypted, iv, currentKey.salt, credential.credentialId);
+      // Store both password-encrypted and device-encrypted master keys
+      await setEncryptedMasterKey(
+        currentKey.passwordEncrypted,
+        currentKey.passwordIv,
+        currentKey.salt,
+        deviceEncrypted,
+        deviceIv,
+        credential.credentialId,
+      );
       setHasPasskey(true);
 
       return credential;
@@ -202,39 +212,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      let masterKey: CryptoKey;
+      // Derive key from password and decrypt using password-encrypted fields
+      const passwordKey = await deriveKey(password, encryptedKey.salt);
+      const masterKey = await decryptMasterKey(
+        encryptedKey.passwordEncrypted,
+        encryptedKey.passwordIv,
+        passwordKey,
+      );
 
-      // Try device key first if available
-      const deviceKey = getDeviceKey();
-      if (deviceKey && encryptedKey.passkeyCredentialId) {
-        try {
-          const deviceKeyCrypto = await deriveKeyFromDeviceKey(deviceKey);
-          masterKey = await decryptMasterKey(
-            encryptedKey.encrypted,
-            encryptedKey.iv,
-            deviceKeyCrypto,
-          );
-        } catch {
-          // Device key failed, fall back to password
-          const passwordKey = await deriveKey(password, encryptedKey.salt);
-          masterKey = await decryptMasterKey(encryptedKey.encrypted, encryptedKey.iv, passwordKey);
-        }
-      } else {
-        // Derive master key from password using stored salt
-        const passwordKey = await deriveKey(password, encryptedKey.salt);
-        masterKey = await decryptMasterKey(encryptedKey.encrypted, encryptedKey.iv, passwordKey);
-      }
-
-      // Regenerate device key for future passkey use
-      if (encryptedKey.passkeyCredentialId) {
+      // Regenerate device key for future passkey use (if passkey is configured)
+      if (
+        encryptedKey.passkeyCredentialId &&
+        encryptedKey.deviceEncrypted &&
+        encryptedKey.deviceIv
+      ) {
         const newDeviceKey = generateDeviceKey();
         setDeviceKey(newDeviceKey);
         const deviceKeyCrypto = await deriveKeyFromDeviceKey(newDeviceKey);
-        const { encrypted, iv } = await encryptMasterKey(masterKey, deviceKeyCrypto);
+        const { encrypted: deviceEncrypted, iv: deviceIv } = await encryptMasterKey(
+          masterKey,
+          deviceKeyCrypto,
+        );
         await setEncryptedMasterKey(
-          encrypted,
-          iv,
+          encryptedKey.passwordEncrypted,
+          encryptedKey.passwordIv,
           encryptedKey.salt,
+          deviceEncrypted,
+          deviceIv,
           encryptedKey.passkeyCredentialId,
         );
       }
@@ -250,7 +254,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setCards([]);
       }
 
-      setHasPasskey(!!encryptedKey.passkeyCredentialId);
+      setHasPasskey(!!(encryptedKey.passkeyCredentialId && encryptedKey.deviceEncrypted));
       setIsUnlocked(true);
       setLocation(originalRouteRef.current);
     } catch {
@@ -275,6 +279,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // Check if device-encrypted key exists
+      if (!encryptedKey.deviceEncrypted || !encryptedKey.deviceIv) {
+        setError('Passkey not properly configured. Please use password.');
+        return;
+      }
+
       // Get device key
       const deviceKey = getDeviceKey();
       if (!deviceKey) {
@@ -282,11 +292,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Decrypt master key with device key
+      // Decrypt master key with device key using device-encrypted fields
       const deviceKeyCrypto = await deriveKeyFromDeviceKey(deviceKey);
       const masterKey = await decryptMasterKey(
-        encryptedKey.encrypted,
-        encryptedKey.iv,
+        encryptedKey.deviceEncrypted,
+        encryptedKey.deviceIv,
         deviceKeyCrypto,
       );
 

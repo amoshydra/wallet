@@ -8,9 +8,13 @@ interface DataValue {
 
 interface EncryptedMasterKey {
   id: string;
-  encrypted: ArrayBuffer;
-  iv: ArrayBuffer;
+  // Encrypted with password-derived key (always available)
+  passwordEncrypted: ArrayBuffer;
+  passwordIv: ArrayBuffer;
   salt: ArrayBuffer;
+  // Encrypted with device key (only when passkey is configured)
+  deviceEncrypted?: ArrayBuffer;
+  deviceIv?: ArrayBuffer;
   passkeyCredentialId?: string;
 }
 
@@ -67,17 +71,21 @@ export async function getEncryptedMasterKey(): Promise<EncryptedMasterKey | null
 }
 
 export async function setEncryptedMasterKey(
-  encrypted: ArrayBuffer,
-  iv: ArrayBuffer,
+  passwordEncrypted: ArrayBuffer,
+  passwordIv: ArrayBuffer,
   salt: ArrayBuffer,
+  deviceEncrypted?: ArrayBuffer,
+  deviceIv?: ArrayBuffer,
   passkeyCredentialId?: string,
 ): Promise<void> {
   const db = await getDB();
   await db.put('keys', {
     id: 'master',
-    encrypted,
-    iv,
+    passwordEncrypted,
+    passwordIv,
     salt,
+    deviceEncrypted,
+    deviceIv,
     passkeyCredentialId,
   });
 }
