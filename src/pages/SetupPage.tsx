@@ -1,48 +1,18 @@
 import { useState, type SubmitEvent } from 'react';
+import { useLocation } from 'wouter';
 import { useAuth } from '../contexts/AuthContext';
-import { createBiometricCredential } from '../utils/webauthn';
-import type { BiometricCredential } from '../types/auth';
 
-type SetupStep = 'choose' | 'biometric' | 'password';
-type AuthChoice = 'biometric' | 'password' | null;
+type SetupStep = 'password' | 'passkey-prompt';
 
 export default function SetupPage() {
-  const { setupPasswordOnly, setupBiometricPassword, error } = useAuth();
-  const [step, setStep] = useState<SetupStep>('choose');
-  const [authChoice, setAuthChoice] = useState<AuthChoice>(null);
-  const [biometricCredential, setBiometricCredential] = useState<BiometricCredential | null>(null);
+  const [, setLocation] = useLocation();
+  const { setupPassword, setupPasskey, error, canUsePasskey } = useAuth();
+  const [step, setStep] = useState<SetupStep>('password');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [localError, setLocalError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isBiometricLoading, setIsBiometricLoading] = useState(false);
-
-  const handleChooseBiometric = () => {
-    setAuthChoice('biometric');
-    setStep('biometric');
-    setLocalError('');
-  };
-
-  const handleChoosePassword = () => {
-    setAuthChoice('password');
-    setStep('password');
-    setLocalError('');
-  };
-
-  const handleSetUpBiometric = async () => {
-    setLocalError('');
-    setIsBiometricLoading(true);
-    try {
-      const credential = await createBiometricCredential();
-      setBiometricCredential(credential);
-      setStep('password');
-    } catch (e) {
-      const message = e instanceof Error ? e.message : 'Biometric setup failed';
-      setLocalError(message);
-    } finally {
-      setIsBiometricLoading(false);
-    }
-  };
+  const [isSettingUpPasskey, setIsSettingUpPasskey] = useState(false);
 
   const handlePasswordSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
@@ -59,81 +29,77 @@ export default function SetupPage() {
 
     setIsSubmitting(true);
     try {
-      if (authChoice === 'biometric') {
-        if (!biometricCredential) {
-          setLocalError('Biometric setup incomplete. Please go back and set up biometric.');
-          return;
-        }
-        await setupBiometricPassword(password, biometricCredential);
+      await setupPassword(password);
+      // After successful password setup, prompt for passkey if available
+      if (canUsePasskey) {
+        setStep('passkey-prompt');
       } else {
-        await setupPasswordOnly(password);
+        // Passkey not available, navigate to home
+        setLocation('/');
       }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (step === 'choose') {
+  const handleEnablePasskey = async () => {
+    setIsSettingUpPasskey(true);
+    try {
+      await setupPasskey();
+      // After passkey setup, navigate to home
+      setLocation('/');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Passkey setup failed';
+      setLocalError(message);
+    } finally {
+      setIsSettingUpPasskey(false);
+    }
+  };
+
+  const handleSkipPasskey = () => {
+    // User can skip passkey and use password only
+    // Navigate to home (already unlocked from password setup)
+    setLocation('/');
+  };
+
+  if (step === 'passkey-prompt') {
     return (
       <div className="page">
         <div className="setup-container">
-          <h1>Choose Your Security</h1>
-          <p className="warning">
-            All your data is encrypted with your chosen method.
-            <strong> If you forget your password, your data cannot be recovered.</strong>
+          <h1>Enable Quick Unlock?</h1>
+          <p className="notice">
+            Set up a passkey for faster access next time (Touch ID, Face ID, or password manager).
+            You can always use your password as a backup.
           </p>
 
-          <div className="setup-options">
-            <button
-              type="button"
-              className="btn-primary setup-option"
-              onClick={handleChooseBiometric}
-            >
-              <span className="option-icon">👆</span>
-              <span className="option-title">Biometric + Password</span>
-              <span className="option-desc">Face ID / Touch ID + password backup</span>
-            </button>
-
-            <button
-              type="button"
-              className="btn-secondary setup-option"
-              onClick={handleChoosePassword}
-            >
-              <span className="option-icon">🔒</span>
-              <span className="option-title">Password Only</span>
-              <span className="option-desc">Traditional password protection</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (step === 'biometric') {
-    return (
-      <div className="page">
-        <div className="setup-container">
-          <h1>Set Up Biometric</h1>
-          <p>Use your device's biometric authentication for quick access.</p>
-
-          {localError && <p className="error">{localError}</p>}
+          {localError && (
+            <div>
+              <p className="error">{localError}</p>
+              <p
+                className="notice"
+                style={{ fontSize: '12px', marginTop: '8px' }}
+              >
+                Tip: If using a password manager, make sure it supports passkeys for this site.
+              </p>
+            </div>
+          )}
 
           <button
             type="button"
             className="btn-primary"
-            onClick={handleSetUpBiometric}
-            disabled={isBiometricLoading}
+            onClick={handleEnablePasskey}
+            disabled={isSettingUpPasskey}
           >
-            {isBiometricLoading ? 'Setting up...' : 'Set Up Touch ID / Face ID'}
+            {isSettingUpPasskey ? 'Setting up...' : '👆 Set Up Passkey'}
           </button>
 
           <button
             type="button"
             className="btn-text"
-            onClick={handleChoosePassword}
-            disabled={isBiometricLoading}
+            onClick={handleSkipPasskey}
+            disabled={isSettingUpPasskey}
           >
-            Use Password Only Instead
+            {localError ? 'Continue without passkey' : 'Skip for now'}
           </button>
         </div>
       </div>
@@ -143,21 +109,15 @@ export default function SetupPage() {
   return (
     <div className="page">
       <div className="setup-container">
-        <h1>{authChoice === 'password' ? 'Create Password' : 'Create Backup Password'}</h1>
+        <h1>Create Password</h1>
         <p className="notice">
           👋 Heads up! This app is a work in progress. Things might change or break, and your data
           could be lost during updates. We recommend exporting your cards as backup regularly.
         </p>
-        {authChoice === 'password' ? (
-          <p className="warning">
-            All your data is encrypted with your password.
-            <strong> If you forget your password, your data cannot be recovered.</strong>
-          </p>
-        ) : (
-          <p className="warning">
-            This password will be used if biometric authentication is unavailable.
-          </p>
-        )}
+        <p className="warning">
+          All your data is encrypted with your password.
+          <strong> If you forget your password, your data cannot be recovered.</strong>
+        </p>
 
         <form onSubmit={handlePasswordSubmit}>
           <div className="form-group">

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLocation } from 'wouter';
 import type { AppData } from '../types/card';
-import type { AuthMethod, StoredAuthConfig, BiometricCredential } from '../types/auth';
+import type { PasskeyCredential } from '../types/auth';
 import {
   decrypt,
   deriveKey,
@@ -10,30 +10,31 @@ import {
   generateMasterKey,
   encryptMasterKey,
   decryptMasterKey,
+  generateDeviceKey,
+  deriveKeyFromDeviceKey,
 } from '../utils/crypto';
 import {
   getEncryptedData,
   setEncryptedData,
-  getSalt,
-  hasPassword,
-  getAuthConfig,
-  setAuthConfig,
-  hasAuthConfig,
+  getEncryptedMasterKey,
+  setEncryptedMasterKey,
+  hasEncryptedMasterKey,
+  getDeviceKey,
+  setDeviceKey,
 } from '../utils/db';
-import { canUseBiometric, getBiometricKey } from '../utils/webauthn';
+import { canUsePasskey, createPasskey, authenticateWithPasskey } from '../utils/webauthn';
 
 interface AuthContextType {
   isUnlocked: boolean;
   isLoading: boolean;
   isFirstTime: boolean;
-  authMethod: AuthMethod | null;
-  hasBiometric: boolean;
   error: string | null;
-  canSetupBiometric: boolean;
-  setupPasswordOnly: (password: string) => Promise<void>;
-  setupBiometricPassword: (password: string, credential: BiometricCredential) => Promise<void>;
+  hasPasskey: boolean;
+  canUsePasskey: boolean;
+  setupPassword: (password: string) => Promise<void>;
+  setupPasskey: () => Promise<PasskeyCredential | null>;
   unlockWithPassword: (password: string) => Promise<void>;
-  unlockWithBiometric: () => Promise<void>;
+  unlockWithPasskey: () => Promise<void>;
   lock: () => void;
   getCards: () => AppData['cards'];
   saveCards: (cards: AppData['cards']) => Promise<void>;
@@ -53,10 +54,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isFirstTime, setIsFirstTime] = useState(false);
-  const [authMethod, setAuthMethod] = useState<AuthMethod | null>(null);
-  const [hasBiometric, setHasBiometric] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [canSetupBiometric, setCanSetupBiometric] = useState(false);
+  const [hasPasskey, setHasPasskey] = useState(false);
+  const [canUsePasskeyState, setCanUsePasskeyState] = useState(false);
   const [cards, setCards] = useState<import('../types/card').Card[]>([]);
   const masterKeyRef = useRef<CryptoKey | null>(null);
   const lastActivityRef = useRef<number>(Date.now());
@@ -65,32 +65,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const biometricAvailable = await canUseBiometric();
-      setCanSetupBiometric(biometricAvailable);
+      const passkeyAvailable = await canUsePasskey();
+      setCanUsePasskeyState(passkeyAvailable);
 
-      const hasAuth = await hasAuthConfig();
-      const hasOldPassword = await hasPassword();
+      const hasAuth = await hasEncryptedMasterKey();
 
-      if (!hasAuth && !hasOldPassword) {
+      if (!hasAuth) {
         setIsFirstTime(true);
         setIsLoading(false);
         setLocation('/setup', { replace: true });
         return;
       }
 
-      if (hasOldPassword && !hasAuth) {
-        setIsFirstTime(false);
-        setIsLoading(false);
-        setLocation('/unlock', { replace: true });
-        return;
-      }
-
-      const config = await getAuthConfig();
-      if (config) {
-        setAuthMethod(config.method);
-        setHasBiometric(!!config.biometric);
-        setIsFirstTime(false);
-      }
+      // Check if passkey is configured
+      const encryptedKey = await getEncryptedMasterKey();
+      setHasPasskey(!!encryptedKey?.passkeyCredentialId);
+      setIsFirstTime(false);
       setIsLoading(false);
       setLocation('/unlock', { replace: true });
     })();
@@ -139,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [isUnlocked]);
 
-  const setupPasswordOnly = async (password: string) => {
+  const setupPassword = async (password: string) => {
     setError(null);
     try {
       const salt = await generateSalt();
@@ -147,25 +137,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const passwordKey = await deriveKey(password, salt);
       const { encrypted, iv } = await encryptMasterKey(masterKey, passwordKey);
 
-      const config: StoredAuthConfig = {
-        method: 'password',
-        passwordSalt: salt,
-        passwordEncryptedMasterKey: encrypted,
-        passwordMasterKeyIv: iv,
-      };
-      await setAuthConfig(config);
+      // Store encrypted master key with salt (without passkey initially)
+      await setEncryptedMasterKey(encrypted, iv, salt);
 
       const emptyData: AppData = { cards: [] };
       const encryptedData = await encrypt(JSON.stringify(emptyData), masterKey);
       await setEncryptedData(encryptedData.encrypted, encryptedData.iv);
 
       masterKeyRef.current = masterKey;
-      setAuthMethod('password');
-      setHasBiometric(false);
       setIsFirstTime(false);
       setIsUnlocked(true);
       setCards([]);
-      setLocation('/');
+      // Don't navigate here - let SetupPage handle navigation after passkey setup
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
       setError(`Failed to setup password: ${message}`);
@@ -173,89 +156,87 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const setupBiometricPassword = async (password: string, credential: BiometricCredential) => {
+  const setupPasskey = async (): Promise<PasskeyCredential> => {
     setError(null);
     try {
-      const salt = await generateSalt();
-      const masterKey = await generateMasterKey();
-      const passwordKey = await deriveKey(password, salt);
-      const passwordEncrypted = await encryptMasterKey(masterKey, passwordKey);
+      if (!masterKeyRef.current) {
+        throw new Error('Not authenticated');
+      }
 
-      const biometricKey = await getBiometricKey(credential);
-      const biometricEncrypted = await encryptMasterKey(masterKey, biometricKey);
+      // Get current encrypted key to preserve the salt
+      const currentKey = await getEncryptedMasterKey();
+      if (!currentKey) {
+        throw new Error('No master key found');
+      }
 
-      const config: StoredAuthConfig = {
-        method: 'biometric',
-        passwordSalt: salt,
-        passwordEncryptedMasterKey: passwordEncrypted.encrypted,
-        passwordMasterKeyIv: passwordEncrypted.iv,
-        biometric: credential,
-        biometricEncryptedMasterKey: biometricEncrypted.encrypted,
-        biometricMasterKeyIv: biometricEncrypted.iv,
-      };
-      await setAuthConfig(config);
+      // Create passkey
+      const credential = await createPasskey();
 
-      const emptyData: AppData = { cards: [] };
-      const encryptedData = await encrypt(JSON.stringify(emptyData), masterKey);
-      await setEncryptedData(encryptedData.encrypted, encryptedData.iv);
+      // Generate device key and store it
+      const deviceKey = generateDeviceKey();
+      setDeviceKey(deviceKey);
 
-      masterKeyRef.current = masterKey;
-      setAuthMethod('biometric');
-      setHasBiometric(true);
-      setIsFirstTime(false);
-      setIsUnlocked(true);
-      setCards([]);
-      setLocation('/');
+      // Encrypt master key with device key
+      const deviceKeyCrypto = await deriveKeyFromDeviceKey(deviceKey);
+      const { encrypted, iv } = await encryptMasterKey(masterKeyRef.current, deviceKeyCrypto);
+
+      // Store encrypted master key with salt and passkey credential ID
+      await setEncryptedMasterKey(encrypted, iv, currentKey.salt, credential.credentialId);
+      setHasPasskey(true);
+
+      return credential;
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'Unknown error';
-      setError(`Failed to setup biometric: ${message}`);
-      console.error('Setup error:', e);
+      const message = e instanceof Error ? e.message : 'Passkey setup failed';
+      setError(message);
+      console.error('Passkey setup error:', e);
+      throw new Error(message);
     }
   };
 
   const unlockWithPassword = async (password: string) => {
     setError(null);
     try {
+      const encryptedKey = await getEncryptedMasterKey();
+      if (!encryptedKey) {
+        setError('No authentication set up');
+        return;
+      }
+
       let masterKey: CryptoKey;
 
-      const config = await getAuthConfig();
-      if (config) {
-        const passwordKey = await deriveKey(password, config.passwordSalt);
-        masterKey = await decryptMasterKey(
-          config.passwordEncryptedMasterKey,
-          config.passwordMasterKeyIv,
-          passwordKey,
-        );
+      // Try device key first if available
+      const deviceKey = getDeviceKey();
+      if (deviceKey && encryptedKey.passkeyCredentialId) {
+        try {
+          const deviceKeyCrypto = await deriveKeyFromDeviceKey(deviceKey);
+          masterKey = await decryptMasterKey(
+            encryptedKey.encrypted,
+            encryptedKey.iv,
+            deviceKeyCrypto,
+          );
+        } catch {
+          // Device key failed, fall back to password
+          const passwordKey = await deriveKey(password, encryptedKey.salt);
+          masterKey = await decryptMasterKey(encryptedKey.encrypted, encryptedKey.iv, passwordKey);
+        }
       } else {
-        const salt = await getSalt();
-        if (!salt) {
-          setError('No password set');
-          return;
-        }
-        const passwordKey = await deriveKey(password, salt);
-        masterKey = passwordKey;
+        // Derive master key from password using stored salt
+        const passwordKey = await deriveKey(password, encryptedKey.salt);
+        masterKey = await decryptMasterKey(encryptedKey.encrypted, encryptedKey.iv, passwordKey);
+      }
 
-        const stored = await getEncryptedData();
-        if (stored) {
-          const decrypted = await decrypt(stored.encrypted, stored.iv, passwordKey);
-          const data: AppData = JSON.parse(decrypted);
-
-          const newMasterKey = await generateMasterKey();
-          const { encrypted, iv } = await encryptMasterKey(newMasterKey, passwordKey);
-
-          const newConfig: StoredAuthConfig = {
-            method: 'password',
-            passwordSalt: salt,
-            passwordEncryptedMasterKey: encrypted,
-            passwordMasterKeyIv: iv,
-          };
-          await setAuthConfig(newConfig);
-
-          const encryptedData = await encrypt(JSON.stringify(data), newMasterKey);
-          await setEncryptedData(encryptedData.encrypted, encryptedData.iv);
-
-          masterKey = newMasterKey;
-        }
+      // Regenerate device key for future passkey use
+      if (encryptedKey.passkeyCredentialId) {
+        const newDeviceKey = generateDeviceKey();
+        setDeviceKey(newDeviceKey);
+        const deviceKeyCrypto = await deriveKeyFromDeviceKey(newDeviceKey);
+        const { encrypted, iv } = await encryptMasterKey(masterKey, deviceKeyCrypto);
+        await setEncryptedMasterKey(
+          encrypted,
+          iv,
+          encryptedKey.salt,
+          encryptedKey.passkeyCredentialId,
+        );
       }
 
       masterKeyRef.current = masterKey;
@@ -269,13 +250,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setCards([]);
       }
 
-      if (config) {
-        setAuthMethod(config.method);
-        setHasBiometric(!!config.biometric);
-      } else {
-        setAuthMethod('password');
-        setHasBiometric(false);
-      }
+      setHasPasskey(!!encryptedKey.passkeyCredentialId);
       setIsUnlocked(true);
       setLocation(originalRouteRef.current);
     } catch {
@@ -284,24 +259,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const unlockWithBiometric = async () => {
+  const unlockWithPasskey = async () => {
     setError(null);
     try {
-      const config = await getAuthConfig();
-      if (!config || !config.biometric) {
-        setError('Biometric not configured');
+      const encryptedKey = await getEncryptedMasterKey();
+      if (!encryptedKey?.passkeyCredentialId) {
+        setError('Passkey not configured');
         return;
       }
 
-      const biometricKey = await getBiometricKey(config.biometric);
-      if (!config.biometricEncryptedMasterKey || !config.biometricMasterKeyIv) {
-        setError('Biometric key not found');
+      // Authenticate with passkey
+      const authenticated = await authenticateWithPasskey(encryptedKey.passkeyCredentialId);
+      if (!authenticated) {
+        setError('Passkey authentication failed');
         return;
       }
+
+      // Get device key
+      const deviceKey = getDeviceKey();
+      if (!deviceKey) {
+        setError('Device key not found. Please use password.');
+        return;
+      }
+
+      // Decrypt master key with device key
+      const deviceKeyCrypto = await deriveKeyFromDeviceKey(deviceKey);
       const masterKey = await decryptMasterKey(
-        config.biometricEncryptedMasterKey,
-        config.biometricMasterKeyIv,
-        biometricKey,
+        encryptedKey.encrypted,
+        encryptedKey.iv,
+        deviceKeyCrypto,
       );
 
       masterKeyRef.current = masterKey;
@@ -315,12 +301,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setCards([]);
       }
 
-      setAuthMethod(config.method);
-      setHasBiometric(true);
       setIsUnlocked(true);
       setLocation(originalRouteRef.current);
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'Biometric authentication failed';
+      const message = e instanceof Error ? e.message : 'Passkey authentication failed';
       setError(message);
       masterKeyRef.current = null;
     }
@@ -374,14 +358,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isUnlocked,
         isLoading,
         isFirstTime,
-        authMethod,
-        hasBiometric,
         error,
-        canSetupBiometric,
-        setupPasswordOnly,
-        setupBiometricPassword,
+        hasPasskey,
+        canUsePasskey: canUsePasskeyState,
+        setupPassword,
+        setupPasskey,
         unlockWithPassword,
-        unlockWithBiometric,
+        unlockWithPasskey,
         lock,
         getCards: () => cards,
         saveCards,

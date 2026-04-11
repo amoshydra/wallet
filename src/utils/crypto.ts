@@ -94,3 +94,32 @@ export async function decryptMasterKey(
   const keyBytes = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, decryptionKey, encrypted);
   return importMasterKeyBytes(keyBytes);
 }
+
+// Device key functions for passkey authentication
+// Device key is stored as hex string, but we need to convert it back to bytes for AES
+export function generateDeviceKey(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function hexToBytes(hex: string): Uint8Array {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
+  }
+  return bytes;
+}
+
+export async function deriveKeyFromDeviceKey(deviceKey: string): Promise<CryptoKey> {
+  // Convert hex string back to 32 bytes (256 bits) for AES
+  const keyData = hexToBytes(deviceKey);
+
+  return crypto.subtle.importKey(
+    'raw',
+    keyData.buffer as ArrayBuffer,
+    { name: 'AES-GCM', length: KEY_LENGTH },
+    false,
+    ['encrypt', 'decrypt'],
+  );
+}

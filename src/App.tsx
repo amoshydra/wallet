@@ -21,30 +21,38 @@ function AppContent() {
 
   return (
     <Switch>
-      {isFirstTime && (
+      {/* Setup route - available when first time OR unlocked (for passkey setup flow) */}
+      {(isFirstTime || isUnlocked) && (
         <Route
           path="/setup"
           component={SetupPage}
         />
       )}
+
+      {/* Unlock route - only when not first time and locked */}
       {!isFirstTime && !isUnlocked && (
         <Route
           path="/unlock"
           component={UnlockPage}
         />
       )}
+
+      {/* First time - redirect unlock to setup */}
       {isFirstTime && (
         <Route
           path="/unlock"
           component={SetupPage}
         />
       )}
+
+      {/* First time - default to setup */}
       {isFirstTime && (
         <Route path="/">
           <SetupPage />
         </Route>
       )}
 
+      {/* Unlocked routes */}
       {isUnlocked && (
         <Route
           path="/"

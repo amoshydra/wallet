@@ -2,26 +2,26 @@ import { useState, type SubmitEvent } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function UnlockPage() {
-  const { unlockWithPassword, unlockWithBiometric, hasBiometric, error } = useAuth();
+  const { unlockWithPassword, unlockWithPasskey, hasPasskey, error } = useAuth();
   const [password, setPassword] = useState('');
-  const [biometricError, setBiometricError] = useState<string | null>(null);
-  const [isBiometricLoading, setIsBiometricLoading] = useState(false);
+  const [passkeyError, setPasskeyError] = useState<string | null>(null);
+  const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
 
   const handlePasswordSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
-    setBiometricError(null);
+    setPasskeyError(null);
     await unlockWithPassword(password);
   };
 
-  const handleBiometricUnlock = async () => {
-    setBiometricError(null);
-    setIsBiometricLoading(true);
+  const handlePasskeyUnlock = async () => {
+    setPasskeyError(null);
+    setIsPasskeyLoading(true);
     try {
-      await unlockWithBiometric();
+      await unlockWithPasskey();
     } catch (e) {
-      setBiometricError(e instanceof Error ? e.message : 'Biometric authentication failed');
+      setPasskeyError(e instanceof Error ? e.message : 'Passkey authentication failed');
     } finally {
-      setIsBiometricLoading(false);
+      setIsPasskeyLoading(false);
     }
   };
 
@@ -30,19 +30,19 @@ export default function UnlockPage() {
       <div className="unlock-container">
         <h1>Unlock Wallet</h1>
 
-        {hasBiometric && (
+        {hasPasskey && (
           <>
             <button
               type="button"
-              className="btn-primary btn-biometric"
-              onClick={handleBiometricUnlock}
-              disabled={isBiometricLoading}
+              className="btn-primary"
+              onClick={handlePasskeyUnlock}
+              disabled={isPasskeyLoading}
             >
-              {isBiometricLoading ? 'Authenticating...' : '👆 Unlock with Biometric'}
+              {isPasskeyLoading ? 'Authenticating...' : '👆 Use Passkey'}
             </button>
 
             <div className="divider">
-              <span>or use password</span>
+              <span>or</span>
             </div>
           </>
         )}
@@ -57,17 +57,17 @@ export default function UnlockPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               autoComplete="current-password"
-              autoFocus={!hasBiometric}
+              autoFocus={!hasPasskey}
             />
           </div>
 
-          {(biometricError || error) && <p className="error">{biometricError || error}</p>}
+          {(passkeyError || error) && <p className="error">{passkeyError || error}</p>}
 
           <button
             type="submit"
-            className={hasBiometric ? 'btn-secondary' : 'btn-primary'}
+            className={hasPasskey ? 'btn-secondary' : 'btn-primary'}
           >
-            Unlock
+            Unlock with Password
           </button>
         </form>
       </div>
