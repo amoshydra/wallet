@@ -100,11 +100,20 @@ export default function HomePage() {
               key={card.id}
               className="card-item"
               onClick={() => setLocation(`/card/${card.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setLocation(`/card/${card.id}`);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`View ${card.name} card details`}
             >
               {card.imageData ? (
                 <img
                   src={card.imageData}
-                  alt={card.name}
+                  alt=""
                   className="card-image"
                 />
               ) : (

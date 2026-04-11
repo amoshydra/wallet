@@ -11,39 +11,41 @@
   --bg-card: white;
   --bg-input: white;
   --bg-modal: white;
-  --bg-fab: #007bff;
+  --bg-fab: #0056b3;
   --bg-warning: #fff3cd;
   --bg-code: #f8f9fa;
   --bg-dropdown-hover: #f5f5f5;
   --bg-dropdown-active: #eee;
   --bg-card-detail-image: #f0f0f0;
-  --bg-tab-active: #007bff;
+  --bg-tab-active: #0056b3;
   --bg-badge: #e9ecef;
   --bg-icon-btn-hover: #f0f0f0;
   --bg-icon-btn-active: #e0e0e0;
   --bg-csv-preview: #f8f9fa;
 
-  --text-primary: #333;
-  --text-secondary: #666;
-  --text-muted: #555;
-  --text-warning: #856404;
-  --text-badge: #495057;
-  --text-error: #dc3545;
-  --text-success: #28a745;
+  --text-primary: #212121;
+  --text-secondary: #555555;
+  --text-muted: #444444;
+  --text-warning: #664b02;
+  --text-badge: #333333;
+  --text-error: #d32f2f;
+  --text-success: #2e7d32;
   --text-on-primary: white;
   --text-tab-active: white;
 
-  --border-default: #ddd;
-  --border-light: #eee;
-  --border-input-focus: #007bff;
-  --border-tab: #ddd;
-  --border-warning: #ffc107;
+  --border-default: #949494;
+  --border-light: #ccc;
+  --border-input-focus: #0056b3;
+  --border-tab: #949494;
+  --border-warning: #d4a017;
 
-  --btn-primary-bg: #007bff;
-  --btn-primary-disabled: #ccc;
-  --btn-secondary-bg: #6c757d;
-  --btn-danger-bg: #dc3545;
-  --btn-text-color: #007bff;
+  --btn-primary-bg: #0056b3;
+  --btn-primary-disabled-bg: #757575;
+  --btn-primary-disabled-text: white;
+  --btn-secondary-bg: #495057;
+  --btn-secondary-border: #495057;
+  --btn-danger-bg: #c82333;
+  --btn-text-color: #004494;
 
   --shadow-card: rgba(0, 0, 0, 0.1);
   --shadow-fab: rgba(0, 123, 255, 0.4);
@@ -61,38 +63,40 @@
     --bg-card: #2a2a2a;
     --bg-input: #3a3a3a;
     --bg-modal: #2a2a2a;
-    --bg-fab: #0066cc;
+    --bg-fab: #0056b3;
     --bg-warning: #3d3418;
     --bg-code: #1f1f1f;
     --bg-dropdown-hover: #3a3a3a;
     --bg-dropdown-active: #444;
     --bg-card-detail-image: #1f1f1f;
-    --bg-tab-active: #0066cc;
+    --bg-tab-active: #0056b3;
     --bg-badge: #3a3a3a;
     --bg-icon-btn-hover: #3a3a3a;
     --bg-icon-btn-active: #444;
     --bg-csv-preview: #1f1f1f;
 
     --text-primary: #e0e0e0;
-    --text-secondary: #a0a0a0;
-    --text-muted: #b0b0b0;
-    --text-warning: #d4a017;
-    --text-badge: #b0b0b0;
-    --text-error: #ff6b6b;
-    --text-success: #5cb85c;
+    --text-secondary: #b0b0b0;
+    --text-muted: #c0c0c0;
+    --text-warning: #ffc107;
+    --text-badge: #e0e0e0;
+    --text-error: #ff8a80;
+    --text-success: #69f0ae;
     --text-on-primary: white;
     --text-tab-active: white;
 
-    --border-default: #444;
-    --border-light: #333;
+    --border-default: #666;
+    --border-light: #444;
     --border-input-focus: #4a9eff;
-    --border-tab: #444;
-    --border-warning: #d4a017;
+    --border-tab: #666;
+    --border-warning: #ffc107;
 
-    --btn-primary-bg: #0066cc;
-    --btn-primary-disabled: #555;
-    --btn-secondary-bg: #555;
-    --btn-danger-bg: #dc3545;
+    --btn-primary-bg: #0056b3;
+    --btn-primary-disabled-bg: #666;
+    --btn-primary-disabled-text: white;
+    --btn-secondary-bg: #888;
+    --btn-secondary-border: #888;
+    --btn-danger-bg: #cf6679;
     --btn-text-color: #4a9eff;
 
     --shadow-card: rgba(0, 0, 0, 0.3);
@@ -198,8 +202,9 @@ body {
 
 .form-group input:focus,
 .form-group select:focus {
-  outline: none;
-  border-color: var(--border-input-focus);
+  outline: 3px solid var(--border-input-focus);
+  outline-offset: 2px;
+  border-color: transparent;
 }
 
 .btn-primary {
@@ -214,9 +219,16 @@ body {
   cursor: pointer;
 }
 
+.btn-primary:focus-visible {
+  outline: 3px solid var(--border-input-focus);
+  outline-offset: 2px;
+}
+
 .btn-primary:disabled {
-  background: var(--btn-primary-disabled);
+  background: var(--btn-primary-disabled-bg);
+  color: var(--btn-primary-disabled-text);
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .btn-secondary {
@@ -224,17 +236,23 @@ body {
   padding: 14px;
   background: transparent;
   color: var(--btn-secondary-bg);
-  border: 2px solid var(--btn-secondary-bg);
+  border: 2px solid var(--btn-secondary-border);
   border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
 }
 
+.btn-secondary:focus-visible {
+  outline: 3px solid var(--border-input-focus);
+  outline-offset: 2px;
+}
+
 .btn-secondary:disabled {
-  border-color: var(--btn-primary-disabled);
-  color: var(--btn-primary-disabled);
+  border-color: var(--btn-primary-disabled-bg);
+  color: var(--btn-primary-disabled-bg);
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .passkey-button {
@@ -251,12 +269,23 @@ body {
   cursor: pointer;
 }
 
+.btn-danger:focus-visible {
+  outline: 3px solid var(--border-input-focus);
+  outline-offset: 2px;
+}
+
 .btn-text {
   background: none;
   border: none;
   color: var(--btn-text-color);
   cursor: pointer;
   font-size: 14px;
+}
+
+.btn-text:focus-visible {
+  outline: 3px solid var(--border-input-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .error {
@@ -288,6 +317,11 @@ body {
   box-shadow: 0 2px 8px var(--shadow-card);
   cursor: pointer;
   transition: transform 0.2s;
+}
+
+.card-item:focus-visible {
+  outline: 3px solid var(--border-input-focus);
+  outline-offset: 2px;
 }
 
 .card-item:active {
@@ -346,6 +380,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.fab:focus-visible {
+  outline: 3px solid var(--border-input-focus);
+  outline-offset: 4px;
 }
 
 .form {
@@ -413,6 +452,11 @@ body {
   background: var(--bg-code);
   border-radius: 8px;
   cursor: pointer;
+}
+
+.card-number-container:focus-visible {
+  outline: 3px solid var(--border-input-focus);
+  outline-offset: 2px;
 }
 
 .card-number-label {
@@ -498,6 +542,11 @@ body {
   font-size: 14px;
   cursor: pointer;
   color: var(--text-primary);
+}
+
+.detail-tabs .tab:focus-visible {
+  outline: 3px solid var(--border-input-focus);
+  outline-offset: 2px;
 }
 
 .detail-tabs .tab.active {
@@ -635,6 +684,11 @@ body {
   color: var(--text-primary);
 }
 
+.code-tabs .tab:focus-visible {
+  outline: 3px solid var(--border-input-focus);
+  outline-offset: 2px;
+}
+
 .code-tabs .tab.active {
   background: var(--bg-tab-active);
   color: var(--text-tab-active);
@@ -754,6 +808,11 @@ body {
   cursor: pointer;
   font-size: 14px;
   color: var(--text-primary);
+}
+
+.dropdown-item:focus-visible {
+  outline: 3px solid var(--border-input-focus);
+  outline-offset: -3px;
 }
 
 .dropdown-item:hover {
@@ -882,6 +941,11 @@ body {
   border-radius: 8px;
   cursor: pointer;
   color: var(--text-primary);
+}
+
+.icon-btn:focus-visible {
+  outline: 3px solid var(--border-input-focus);
+  outline-offset: 2px;
 }
 
 .icon-btn:hover {

@@ -45,6 +45,13 @@ export default function CardDetailPage() {
     }
   };
 
+  const handleCopyKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleCopy();
+    }
+  };
+
   const handleDelete = async () => {
     await deleteCard(card.id);
     setLocation('/');
@@ -107,6 +114,10 @@ export default function CardDetailPage() {
             <div
               className="card-number-container"
               onClick={handleCopy}
+              onKeyDown={handleCopyKeyDown}
+              role="button"
+              tabIndex={0}
+              aria-label={`Copy card number for ${card.name}`}
             >
               <span className="card-number-label">Card Number</span>
               <div className="card-number-row">
