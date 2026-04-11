@@ -1,5 +1,8 @@
 # Wallet
 
+> **⚠️ Work in Progress**  
+> This app is still being built! Things might break, and your data could be lost when updates roll out. Consider exporting your cards regularly as backup.
+
 A privacy-focused wallet app for storing loyalty cards, membership cards, and tickets. All data is encrypted locally in your browser using AES-256-GCM.
 
 ## Features

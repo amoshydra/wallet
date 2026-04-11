@@ -33,6 +33,10 @@ export default function SetupPage() {
     <div className="page">
       <div className="setup-container">
         <h1>Create Password</h1>
+        <p className="notice">
+          👋 Heads up! This app is a work in progress. Things might change or break, and your data
+          could be lost during updates. We recommend exporting your cards as backup regularly.
+        </p>
         <p className="warning">
           All your data is encrypted with your password.
           <strong> If you forget your password, your data cannot be recovered.</strong>
