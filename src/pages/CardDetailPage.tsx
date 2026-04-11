@@ -12,12 +12,13 @@ export default function CardDetailPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const copiedTimeoutRef = useRef(-1);
   const [copied, setCopied] = useState(false);
+  const isDeletingRef = useRef(false);
 
   const cards = getCards();
   const card: Card | undefined = cards.find((c) => c.id === params?.id);
 
   useEffect(() => {
-    if (card) {
+    if (card && !isDeletingRef.current) {
       updateCard(card.id, { lastViewedAt: Date.now() });
     }
   }, [card?.id, updateCard]);
@@ -54,6 +55,7 @@ export default function CardDetailPage() {
   };
 
   const handleDelete = async () => {
+    isDeletingRef.current = true;
     await deleteCard(card.id);
     navigate('/');
   };
