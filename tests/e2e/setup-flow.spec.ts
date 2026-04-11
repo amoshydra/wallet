@@ -6,26 +6,15 @@ test.describe('Setup Flow', () => {
     await page.goto('/');
     await clearIndexedDB(page);
     await page.reload();
-    await page.waitForURL('**/setup');
-    await expect(page.locator('h1')).toHaveText('Choose Your Security');
+    await page.waitForURL('**/#/setup');
+    await expect(page.locator('h1')).toHaveText('Create Password');
   });
 
   test('should show error for mismatched passwords', async ({ page }) => {
     await page.goto('/');
     await clearIndexedDB(page);
     await page.reload();
-    await page.waitForURL('**/setup');
-
-    const passwordOnlyButton = page.locator('button:has-text("Password Only")');
-    const setUpPasswordButton = page.locator('button:has-text("Set Up Password")');
-
-    if (await passwordOnlyButton.isVisible()) {
-      await passwordOnlyButton.click();
-    } else if (await setUpPasswordButton.isVisible()) {
-      await setUpPasswordButton.click();
-    }
-
-    await page.waitForSelector('#password', { state: 'visible' });
+    await page.waitForURL('**/#/setup');
 
     await page.locator('#password').fill('password123');
     await page.locator('#confirm').fill('different123');
