@@ -1,16 +1,39 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLocation } from 'wouter';
 import type { AppData } from '../types/card';
-import { decrypt, deriveKey, encrypt, generateSalt } from '../utils/crypto';
-import { getEncryptedData, getSalt, hasPassword, setEncryptedData, setSalt } from '../utils/db';
+import type { AuthMethod, StoredAuthConfig, BiometricCredential } from '../types/auth';
+import {
+  decrypt,
+  deriveKey,
+  encrypt,
+  generateSalt,
+  generateMasterKey,
+  encryptMasterKey,
+  decryptMasterKey,
+} from '../utils/crypto';
+import {
+  getEncryptedData,
+  setEncryptedData,
+  getSalt,
+  hasPassword,
+  getAuthConfig,
+  setAuthConfig,
+  hasAuthConfig,
+} from '../utils/db';
+import { canUseBiometric, getBiometricKey } from '../utils/webauthn';
 
 interface AuthContextType {
   isUnlocked: boolean;
   isLoading: boolean;
   isFirstTime: boolean;
+  authMethod: AuthMethod | null;
+  hasBiometric: boolean;
   error: string | null;
-  setupPassword: (password: string) => Promise<void>;
-  unlock: (password: string) => Promise<void>;
+  canSetupBiometric: boolean;
+  setupPasswordOnly: (password: string) => Promise<void>;
+  setupBiometricPassword: (password: string, credential: BiometricCredential) => Promise<void>;
+  unlockWithPassword: (password: string) => Promise<void>;
+  unlockWithBiometric: () => Promise<void>;
   lock: () => void;
   getCards: () => AppData['cards'];
   saveCards: (cards: AppData['cards']) => Promise<void>;
@@ -30,23 +53,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isFirstTime, setIsFirstTime] = useState(false);
+  const [authMethod, setAuthMethod] = useState<AuthMethod | null>(null);
+  const [hasBiometric, setHasBiometric] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [canSetupBiometric, setCanSetupBiometric] = useState(false);
   const [cards, setCards] = useState<import('../types/card').Card[]>([]);
-  const keyRef = useRef<CryptoKey | null>(null);
+  const masterKeyRef = useRef<CryptoKey | null>(null);
   const lastActivityRef = useRef<number>(Date.now());
   const checkIntervalRef = useRef<number | null>(null);
   const originalRouteRef = useRef<string>('/');
 
   useEffect(() => {
     (async () => {
-      const hasPwd = await hasPassword();
-      setIsFirstTime(!hasPwd);
-      setIsLoading(false);
-      if (!hasPwd) {
+      const biometricAvailable = await canUseBiometric();
+      setCanSetupBiometric(biometricAvailable);
+
+      const hasAuth = await hasAuthConfig();
+      const hasOldPassword = await hasPassword();
+
+      if (!hasAuth && !hasOldPassword) {
+        setIsFirstTime(true);
+        setIsLoading(false);
         setLocation('/setup', { replace: true });
-      } else {
-        setLocation('/unlock', { replace: true });
+        return;
       }
+
+      if (hasOldPassword && !hasAuth) {
+        setIsFirstTime(false);
+        setIsLoading(false);
+        setLocation('/unlock', { replace: true });
+        return;
+      }
+
+      const config = await getAuthConfig();
+      if (config) {
+        setAuthMethod(config.method);
+        setHasBiometric(!!config.biometric);
+        setIsFirstTime(false);
+      }
+      setIsLoading(false);
+      setLocation('/unlock', { replace: true });
     })();
   }, [setLocation]);
 
@@ -56,7 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setIsUnlocked(false);
     setCards([]);
-    keyRef.current = null;
+    masterKeyRef.current = null;
+    setError(null);
     setLocation('/unlock', { replace: true });
   };
 
@@ -90,20 +137,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearInterval(checkIntervalRef.current);
       }
     };
-  }, [isUnlocked, lock]);
+  }, [isUnlocked]);
 
-  const setupPassword = async (password: string) => {
+  const setupPasswordOnly = async (password: string) => {
     setError(null);
     try {
       const salt = await generateSalt();
-      await setSalt(salt);
-      const key = await deriveKey(password, salt);
-      keyRef.current = key;
+      const masterKey = await generateMasterKey();
+      const passwordKey = await deriveKey(password, salt);
+      const { encrypted, iv } = await encryptMasterKey(masterKey, passwordKey);
+
+      const config: StoredAuthConfig = {
+        method: 'password',
+        passwordSalt: salt,
+        passwordEncryptedMasterKey: encrypted,
+        passwordMasterKeyIv: iv,
+      };
+      await setAuthConfig(config);
 
       const emptyData: AppData = { cards: [] };
-      const encrypted = await encrypt(JSON.stringify(emptyData), key);
-      await setEncryptedData(encrypted.encrypted, encrypted.iv);
+      const encryptedData = await encrypt(JSON.stringify(emptyData), masterKey);
+      await setEncryptedData(encryptedData.encrypted, encryptedData.iv);
 
+      masterKeyRef.current = masterKey;
+      setAuthMethod('password');
+      setHasBiometric(false);
       setIsFirstTime(false);
       setIsUnlocked(true);
       setCards([]);
@@ -115,41 +173,163 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const unlock = async (password: string) => {
+  const setupBiometricPassword = async (password: string, credential: BiometricCredential) => {
     setError(null);
     try {
-      const salt = await getSalt();
-      if (!salt) {
-        setError('No password set');
-        return;
+      const salt = await generateSalt();
+      const masterKey = await generateMasterKey();
+      const passwordKey = await deriveKey(password, salt);
+      const passwordEncrypted = await encryptMasterKey(masterKey, passwordKey);
+
+      const biometricKey = await getBiometricKey(credential);
+      const biometricEncrypted = await encryptMasterKey(masterKey, biometricKey);
+
+      const config: StoredAuthConfig = {
+        method: 'biometric',
+        passwordSalt: salt,
+        passwordEncryptedMasterKey: passwordEncrypted.encrypted,
+        passwordMasterKeyIv: passwordEncrypted.iv,
+        biometric: credential,
+        biometricEncryptedMasterKey: biometricEncrypted.encrypted,
+        biometricMasterKeyIv: biometricEncrypted.iv,
+      };
+      await setAuthConfig(config);
+
+      const emptyData: AppData = { cards: [] };
+      const encryptedData = await encrypt(JSON.stringify(emptyData), masterKey);
+      await setEncryptedData(encryptedData.encrypted, encryptedData.iv);
+
+      masterKeyRef.current = masterKey;
+      setAuthMethod('biometric');
+      setHasBiometric(true);
+      setIsFirstTime(false);
+      setIsUnlocked(true);
+      setCards([]);
+      setLocation('/');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Unknown error';
+      setError(`Failed to setup biometric: ${message}`);
+      console.error('Setup error:', e);
+    }
+  };
+
+  const unlockWithPassword = async (password: string) => {
+    setError(null);
+    try {
+      let masterKey: CryptoKey;
+
+      const config = await getAuthConfig();
+      if (config) {
+        const passwordKey = await deriveKey(password, config.passwordSalt);
+        masterKey = await decryptMasterKey(
+          config.passwordEncryptedMasterKey,
+          config.passwordMasterKeyIv,
+          passwordKey,
+        );
+      } else {
+        const salt = await getSalt();
+        if (!salt) {
+          setError('No password set');
+          return;
+        }
+        const passwordKey = await deriveKey(password, salt);
+        masterKey = passwordKey;
+
+        const stored = await getEncryptedData();
+        if (stored) {
+          const decrypted = await decrypt(stored.encrypted, stored.iv, passwordKey);
+          const data: AppData = JSON.parse(decrypted);
+
+          const newMasterKey = await generateMasterKey();
+          const { encrypted, iv } = await encryptMasterKey(newMasterKey, passwordKey);
+
+          const newConfig: StoredAuthConfig = {
+            method: 'password',
+            passwordSalt: salt,
+            passwordEncryptedMasterKey: encrypted,
+            passwordMasterKeyIv: iv,
+          };
+          await setAuthConfig(newConfig);
+
+          const encryptedData = await encrypt(JSON.stringify(data), newMasterKey);
+          await setEncryptedData(encryptedData.encrypted, encryptedData.iv);
+
+          masterKey = newMasterKey;
+        }
       }
 
-      const key = await deriveKey(password, salt);
-      keyRef.current = key;
+      masterKeyRef.current = masterKey;
 
       const stored = await getEncryptedData();
-      if (!stored) {
-        setIsUnlocked(true);
+      if (stored) {
+        const decrypted = await decrypt(stored.encrypted, stored.iv, masterKey);
+        const data: AppData = JSON.parse(decrypted);
+        setCards(data.cards);
+      } else {
         setCards([]);
-        setLocation(originalRouteRef.current);
-        return;
       }
 
-      const decrypted = await decrypt(stored.encrypted, stored.iv, key);
-      const data: AppData = JSON.parse(decrypted);
-      setCards(data.cards);
+      if (config) {
+        setAuthMethod(config.method);
+        setHasBiometric(!!config.biometric);
+      } else {
+        setAuthMethod('password');
+        setHasBiometric(false);
+      }
       setIsUnlocked(true);
       setLocation(originalRouteRef.current);
     } catch {
       setError('Incorrect password');
-      keyRef.current = null;
+      masterKeyRef.current = null;
+    }
+  };
+
+  const unlockWithBiometric = async () => {
+    setError(null);
+    try {
+      const config = await getAuthConfig();
+      if (!config || !config.biometric) {
+        setError('Biometric not configured');
+        return;
+      }
+
+      const biometricKey = await getBiometricKey(config.biometric);
+      if (!config.biometricEncryptedMasterKey || !config.biometricMasterKeyIv) {
+        setError('Biometric key not found');
+        return;
+      }
+      const masterKey = await decryptMasterKey(
+        config.biometricEncryptedMasterKey,
+        config.biometricMasterKeyIv,
+        biometricKey,
+      );
+
+      masterKeyRef.current = masterKey;
+
+      const stored = await getEncryptedData();
+      if (stored) {
+        const decrypted = await decrypt(stored.encrypted, stored.iv, masterKey);
+        const data: AppData = JSON.parse(decrypted);
+        setCards(data.cards);
+      } else {
+        setCards([]);
+      }
+
+      setAuthMethod(config.method);
+      setHasBiometric(true);
+      setIsUnlocked(true);
+      setLocation(originalRouteRef.current);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Biometric authentication failed';
+      setError(message);
+      masterKeyRef.current = null;
     }
   };
 
   const saveCards = async (newCards: import('../types/card').Card[]) => {
-    if (!keyRef.current) return;
+    if (!masterKeyRef.current) return;
     const data: AppData = { cards: newCards };
-    const encrypted = await encrypt(JSON.stringify(data), keyRef.current);
+    const encrypted = await encrypt(JSON.stringify(data), masterKeyRef.current);
     await setEncryptedData(encrypted.encrypted, encrypted.iv);
     setCards(newCards);
   };
@@ -194,9 +374,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isUnlocked,
         isLoading,
         isFirstTime,
+        authMethod,
+        hasBiometric,
         error,
-        setupPassword,
-        unlock,
+        canSetupBiometric,
+        setupPasswordOnly,
+        setupBiometricPassword,
+        unlockWithPassword,
+        unlockWithBiometric,
         lock,
         getCards: () => cards,
         saveCards,

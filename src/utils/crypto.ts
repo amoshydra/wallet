@@ -55,3 +55,42 @@ export async function decrypt(
 
   return decoder.decode(decrypted);
 }
+
+export async function generateMasterKey(): Promise<CryptoKey> {
+  return crypto.subtle.generateKey({ name: 'AES-GCM', length: KEY_LENGTH }, true, [
+    'encrypt',
+    'decrypt',
+  ]);
+}
+
+export async function exportMasterKeyBytes(masterKey: CryptoKey): Promise<ArrayBuffer> {
+  return crypto.subtle.exportKey('raw', masterKey);
+}
+
+export async function importMasterKeyBytes(keyBytes: ArrayBuffer): Promise<CryptoKey> {
+  return crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM', length: KEY_LENGTH }, false, [
+    'encrypt',
+    'decrypt',
+  ]);
+}
+
+export async function encryptMasterKey(
+  masterKey: CryptoKey,
+  encryptionKey: CryptoKey,
+): Promise<{ encrypted: ArrayBuffer; iv: ArrayBuffer }> {
+  const keyBytes = await exportMasterKeyBytes(masterKey);
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, encryptionKey, keyBytes);
+
+  return { encrypted, iv: iv.buffer as ArrayBuffer };
+}
+
+export async function decryptMasterKey(
+  encrypted: ArrayBuffer,
+  iv: ArrayBuffer,
+  decryptionKey: CryptoKey,
+): Promise<CryptoKey> {
+  const keyBytes = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, decryptionKey, encrypted);
+  return importMasterKeyBytes(keyBytes);
+}
