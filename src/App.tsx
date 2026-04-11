@@ -1,4 +1,5 @@
-import { Route, Switch } from 'wouter';
+import { Route, Router, Switch } from 'wouter';
+import { useHashLocation } from 'wouter/use-hash-location';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import SetupPage from './pages/SetupPage';
 import UnlockPage from './pages/UnlockPage';
@@ -7,7 +8,7 @@ import AddCardPage from './pages/AddCardPage';
 import CardDetailPage from './pages/CardDetailPage';
 import CodePage from './pages/CodePage';
 
-function AppRoutes() {
+function AppContent() {
   const { isFirstTime, isLoading, isUnlocked } = useAuth();
 
   if (isLoading) {
@@ -81,8 +82,10 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
+    <Router hook={useHashLocation}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </Router>
   );
 }

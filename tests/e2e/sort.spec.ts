@@ -61,11 +61,17 @@ test.describe('Sort Feature', () => {
     await addCard(page, 'Card B', '2222222222');
     await addCard(page, 'Card C', '3333333333');
 
+    // Wait for cards to be visible
+    await expect(page.locator('.card-name')).toHaveCount(3);
+
     let cardNames = await page.locator('.card-name').allTextContents();
     expect(cardNames).toEqual(['Card C', 'Card B', 'Card A']);
 
     await page.locator('.card-item').nth(2).click();
     await page.locator('button:has-text("Back")').click();
+
+    // Wait for navigation back to home
+    await page.waitForURL('**/#/**');
 
     cardNames = await page.locator('.card-name').allTextContents();
     expect(cardNames).toEqual(['Card A', 'Card C', 'Card B']);
@@ -82,8 +88,10 @@ test.describe('Sort Feature', () => {
     expect(cardNames).toEqual(['First Card', 'Second Card']);
 
     await page.reload();
+    await page.waitForURL('**/#/unlock');
     await page.locator('input[type="password"]').fill('password123');
     await page.locator('button:has-text("Unlock")').click();
+    await page.waitForURL('**/#/**');
     await expect(page.locator('h1')).toHaveText('My Cards');
 
     cardNames = await page.locator('.card-name').allTextContents();
@@ -96,9 +104,9 @@ test.describe('Sort Feature', () => {
 
 async function addCard(page: import('@playwright/test').Page, name: string, number: string) {
   await page.locator('.fab').first().click();
-  await page.waitForURL('**/add');
+  await page.waitForURL('**/#/add');
   await page.locator('input[name="name"], #name, input').first().fill(name);
   await page.locator('input[name="number"], #number, input').nth(1).fill(number);
   await page.locator('button:has-text("Save")').click();
-  await page.waitForURL('**/');
+  await page.waitForURL('**/#/**');
 }

@@ -26,7 +26,7 @@ test.describe('Setup Flow', () => {
   test('should proceed to home page when setup is completed', async ({ page }) => {
     await completeSetup(page, 'password123');
 
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL(/.*#\/$/);
     await expect(page.locator('h1')).toHaveText('My Cards');
     await expect(page.locator('.empty-state')).toContainText('No cards yet');
   });

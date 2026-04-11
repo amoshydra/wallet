@@ -1,75 +1,45 @@
-# React + TypeScript + Vite
+# Wallet
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A privacy-focused wallet app for storing loyalty cards, membership cards, and tickets. All data is encrypted locally in your browser using AES-256-GCM.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Encrypted Storage**: All card data is encrypted with your password using the Web Crypto API
+- **Multiple Card Types**: Support for QR codes, barcodes (Code 128, Code 39, EAN, UPC, PDF417, etc.)
+- **Card Images**: Add photos of physical cards
+- **Export/Import**: Backup your cards as encrypted ZIP files
+- **Auto-lock**: Automatically locks after 5 minutes of inactivity
+- **Offline First**: No server, no cloud - everything stays on your device
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+- React 19 + TypeScript + Vite
+- Web Crypto API for encryption
+- IndexedDB for local storage
+- wouter for routing
 
-Note: This will impact Vite dev & build performances.
+## Development
 
-## Expanding the ESLint configuration
+```bash
+# Install dependencies
+pnpm install
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+# Start dev server
+pnpm run dev
 
-```js
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
+# Run tests
+pnpm run test:e2e
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+# Build for production
+pnpm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Security
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
+- Your password never leaves your device
+- Data is encrypted using AES-256-GCM with PBKDF2 key derivation
+- If you forget your password, your data cannot be recovered
 
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
+## License
+
+MIT
