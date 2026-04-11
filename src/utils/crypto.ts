@@ -92,6 +92,7 @@ export async function decryptMasterKey(
   decryptionKey: CryptoKey,
 ): Promise<CryptoKey> {
   const keyBytes = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, decryptionKey, encrypted);
+  // Keep key non-extractable for security - it never leaves crypto module
   return importMasterKeyBytes(keyBytes);
 }
 

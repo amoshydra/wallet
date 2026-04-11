@@ -220,28 +220,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         passwordKey,
       );
 
-      // Regenerate device key for future passkey use (if passkey is configured)
-      if (
-        encryptedKey.passkeyCredentialId &&
-        encryptedKey.deviceEncrypted &&
-        encryptedKey.deviceIv
-      ) {
-        const newDeviceKey = generateDeviceKey();
-        setDeviceKey(newDeviceKey);
-        const deviceKeyCrypto = await deriveKeyFromDeviceKey(newDeviceKey);
-        const { encrypted: deviceEncrypted, iv: deviceIv } = await encryptMasterKey(
-          masterKey,
-          deviceKeyCrypto,
-        );
-        await setEncryptedMasterKey(
-          encryptedKey.passwordEncrypted,
-          encryptedKey.passwordIv,
-          encryptedKey.salt,
-          deviceEncrypted,
-          deviceIv,
-          encryptedKey.passkeyCredentialId,
-        );
-      }
+      // Note: Device key is NOT regenerated here to maintain security
+      // The existing device key in localStorage remains valid for passkey unlocks
+      // If device key is missing/corrupted, user can still use password
 
       masterKeyRef.current = masterKey;
 
