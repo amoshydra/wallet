@@ -145,6 +145,18 @@ body {
   margin-bottom: 16px;
 }
 
+.notice {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
 .warning {
   background: var(--bg-warning);
   border: 1px solid var(--border-warning);
