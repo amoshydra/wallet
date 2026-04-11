@@ -30,23 +30,6 @@ export default function UnlockPage() {
       <div className="unlock-container">
         <h1>Unlock Wallet</h1>
 
-        {hasPasskey && (
-          <>
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={handlePasskeyUnlock}
-              disabled={isPasskeyLoading}
-            >
-              {isPasskeyLoading ? 'Authenticating...' : '👆 Use Passkey'}
-            </button>
-
-            <div className="divider">
-              <span>or</span>
-            </div>
-          </>
-        )}
-
         <form onSubmit={handlePasswordSubmit}>
           <div className="form-group">
             <label htmlFor="password">Password</label>
@@ -57,7 +40,7 @@ export default function UnlockPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               autoComplete="current-password"
-              autoFocus={!hasPasskey}
+              autoFocus
             />
           </div>
 
@@ -67,9 +50,20 @@ export default function UnlockPage() {
             type="submit"
             className={hasPasskey ? 'btn-secondary' : 'btn-primary'}
           >
-            Unlock with Password
+            Unlock
           </button>
         </form>
+
+        {hasPasskey && (
+          <button
+            type="button"
+            className="btn-primary passkey-button"
+            onClick={handlePasskeyUnlock}
+            disabled={isPasskeyLoading}
+          >
+            {isPasskeyLoading ? 'Authenticating...' : 'Use Passkey'}
+          </button>
+        )}
       </div>
     </div>
   );

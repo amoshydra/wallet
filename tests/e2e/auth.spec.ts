@@ -36,7 +36,7 @@ test.describe('Authentication', () => {
 
     // Unlock with PASSWORD (not passkey) - this is the critical flow
     await page.locator('input[type="password"]').fill('testpass123');
-    await page.locator('button:has-text("Unlock with Password")').click();
+    await page.locator('button[type="submit"]').click();
 
     // Should unlock successfully
     await page.waitForURL('**/#/');
@@ -53,7 +53,7 @@ test.describe('Authentication', () => {
 
     // Try wrong password
     await page.locator('input[type="password"]').fill('wrongpass');
-    await page.locator('button:has-text("Unlock with Password")').click();
+    await page.locator('button[type="submit"]').click();
 
     // Should show error
     await expect(page.locator('.error')).toHaveText('Incorrect password');

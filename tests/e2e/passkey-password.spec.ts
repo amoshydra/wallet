@@ -39,7 +39,7 @@ test.describe('Passkey and Password Authentication', () => {
 
     // Try to unlock with password
     await page.locator('input[type="password"]').fill('testpass123');
-    await page.locator('button:has-text("Unlock with Password")').click();
+    await page.locator('button[type="submit"]').click();
 
     // Should be back on home page
     await page.waitForURL('**/#/');

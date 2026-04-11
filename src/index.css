@@ -220,13 +220,25 @@ body {
 }
 
 .btn-secondary {
-  padding: 8px 16px;
-  background: var(--btn-secondary-bg);
-  color: var(--text-on-primary);
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  color: var(--btn-secondary-bg);
+  border: 2px solid var(--btn-secondary-bg);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
+}
+
+.btn-secondary:disabled {
+  border-color: var(--btn-primary-disabled);
+  color: var(--btn-primary-disabled);
+  cursor: not-allowed;
+}
+
+.passkey-button {
+  margin-top: 12px;
 }
 
 .btn-danger {
