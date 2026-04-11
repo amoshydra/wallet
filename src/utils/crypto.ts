@@ -92,8 +92,11 @@ export async function decryptMasterKey(
   decryptionKey: CryptoKey,
 ): Promise<CryptoKey> {
   const keyBytes = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, decryptionKey, encrypted);
-  // Keep key non-extractable for security - it never leaves crypto module
-  return importMasterKeyBytes(keyBytes);
+  // Make key extractable so it can be re-encrypted with device key for passkey setup
+  return crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM', length: KEY_LENGTH }, true, [
+    'encrypt',
+    'decrypt',
+  ]);
 }
 
 // Device key functions for passkey authentication

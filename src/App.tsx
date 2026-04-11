@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import AddCardPage from './pages/AddCardPage';
 import CardDetailPage from './pages/CardDetailPage';
 import CodePage from './pages/CodePage';
+import SecurityPage from './pages/SecurityPage';
 
 function AppContent() {
   const { isFirstTime, isLoading, isUnlocked, isHidden } = useAuth();
@@ -81,6 +82,12 @@ function AppContent() {
           <Route
             path="/card/:id/code"
             component={CodePage}
+          />
+        )}
+        {isUnlocked && (
+          <Route
+            path="/security"
+            component={SecurityPage}
           />
         )}
 

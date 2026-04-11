@@ -38,6 +38,7 @@ export default function HomePage() {
   const sortedCards = sortCards(cards, sortBy);
 
   const menuItems = [
+    { label: 'Security', onClick: () => navigate('/security') },
     { label: 'Export', onClick: () => setShowExportModal(true) },
     { label: 'Import', onClick: () => setShowImportModal(true) },
   ];

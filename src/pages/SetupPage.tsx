@@ -95,9 +95,10 @@ export default function SetupPage() {
 
           <button
             type="button"
-            className="btn-text"
+            className="btn-secondary"
             onClick={handleSkipPasskey}
             disabled={isSettingUpPasskey}
+            style={{ marginTop: '12px' }}
           >
             {localError ? 'Continue without passkey' : 'Skip for now'}
           </button>
