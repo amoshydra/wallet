@@ -176,10 +176,12 @@ body,
 
 .setup-container,
 .unlock-container {
-  max-width: 400px;
+  max-width: 25rem;
   margin: auto;
-  margin-top: 60px;
+  margin-top: 3.75rem;
   text-align: center;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 .setup-container h1,
@@ -215,7 +217,7 @@ body,
 }
 
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
   text-align: left;
 }
 
@@ -577,7 +579,7 @@ dialog.dialog {
   border: none;
   border-radius: 12px;
   background: var(--bg-modal);
-  padding: 24px;
+  padding: 1rem;
   max-width: 40rem;
   width: 90%;
   color: var(--text-primary);

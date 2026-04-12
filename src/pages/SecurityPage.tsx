@@ -158,7 +158,7 @@ export default function SecurityPage() {
         <div style={{ width: 60 }} />
       </header>
 
-      <div style={{ padding: '20px 0' }}>
+      <div style={{ padding: '1rem' }}>
         {showSuccessMessage && (
           <div
             style={{
