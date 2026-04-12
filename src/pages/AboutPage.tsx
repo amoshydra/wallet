@@ -1,3 +1,4 @@
+import { PromoVideo } from '../components/PromoVideo';
 import { useMaskedNavigation } from '../contexts/NavigationContext';
 
 export default function AboutPage() {
@@ -18,6 +19,7 @@ export default function AboutPage() {
       </header>
 
       <div className="prose-card">
+        <PromoVideo />
         <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
           A secure wallet for storing loyalty/membership cards.
         </p>

@@ -1,4 +1,5 @@
 import { useState, type SubmitEvent } from 'react';
+import { PromoVideo } from '../components/PromoVideo';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function UnlockPage() {
@@ -28,12 +29,13 @@ export default function UnlockPage() {
   return (
     <div className="page">
       <div className="unlock-container">
+        <PromoVideo />
         <h1>Unlock Wallet</h1>
 
         <form onSubmit={handlePasswordSubmit}>
           <div className="form-group">
-            <label htmlFor="password">Password</label>
             <input
+              aria-label="Password"
               id="password"
               type="password"
               value={password}
