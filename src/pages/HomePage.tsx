@@ -20,11 +20,17 @@ export default function HomePage() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('recentlyViewed');
-  const cards = getCards();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     setSortBy(getSortPreference());
   }, []);
+
+  useEffect(() => {
+    setRefreshKey((k) => k + 1);
+  }, [window.location.hash]);
+
+  const cards = getCards();
 
   const handleImport = async (importedCards: Omit<Card, 'id' | 'createdAt'>[]) => {
     await importCards(importedCards);
@@ -95,7 +101,10 @@ export default function HomePage() {
           </button>
         </div>
       ) : (
-        <div className="card-grid sensitive">
+        <div
+          className="card-grid sensitive"
+          key={refreshKey}
+        >
           {sortedCards.map((card: Card) => (
             <div
               key={card.id}

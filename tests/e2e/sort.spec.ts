@@ -71,7 +71,8 @@ test.describe('Sort Feature', () => {
     await page.locator('button:has-text("Back")').click();
 
     // Wait for navigation back to home
-    await page.waitForURL('**/#/**');
+    await page.waitForURL('**/#/');
+    await page.waitForSelector('.card-grid');
 
     cardNames = await page.locator('.card-name').allTextContents();
     expect(cardNames).toEqual(['Card A', 'Card C', 'Card B']);
