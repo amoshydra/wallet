@@ -21,7 +21,14 @@ function cspPlugin(): Plugin {
 
 const pwaOptions = {
   registerType: 'autoUpdate' as const,
-  includeAssets: ['favicon.svg'],
+  includeAssets: [
+    'favicon.ico',
+    'favicon-16x16.png',
+    'favicon-32x32.png',
+    'apple-touch-icon.png',
+    'icon-192x192.png',
+    'icon-512x512.png',
+  ],
   manifest: {
     name: 'Wallet',
     short_name: 'Wallet',
@@ -32,9 +39,15 @@ const pwaOptions = {
     start_url: process.env.BUILD_PUBLIC_PATH || '/',
     icons: [
       {
-        src: 'favicon.svg',
-        sizes: '192x192 512x512',
-        type: 'image/svg+xml',
+        src: 'icon-192x192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any maskable',
+      },
+      {
+        src: 'icon-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
         purpose: 'any maskable',
       },
     ],
