@@ -54,7 +54,7 @@ jobs:
       - name: Test
         run: pnpm run test
       - name: Build
-        run: pnpm run build
+        run: VITE_APP_COMMIT_SHA=$(git rev-parse --short HEAD) pnpm run build
         env:
           BUILD_PUBLIC_PATH: /wallet/
 

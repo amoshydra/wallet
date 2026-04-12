@@ -1,9 +1,7 @@
 import { useState, type SubmitEvent } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useMaskedNavigation } from '../contexts/NavigationContext';
 
 export default function UnlockPage() {
-  const { navigate } = useMaskedNavigation();
   const { unlockWithPassword, unlockWithPasskey, hasPasskey, error } = useAuth();
   const [password, setPassword] = useState('');
   const [passkeyError, setPasskeyError] = useState<string | null>(null);

@@ -30,6 +30,16 @@ export default function AboutPage() {
         >
           View on GitHub →
         </a>
+        <p
+          style={{
+            marginTop: '1rem',
+            fontSize: '0.75rem',
+            color: 'var(--text-muted)',
+            fontFamily: 'monospace',
+          }}
+        >
+          Revision: {import.meta.env.VITE_APP_COMMIT_SHA || 'dev'}
+        </p>
       </div>
     </div>
   );
