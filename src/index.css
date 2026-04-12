@@ -108,6 +108,12 @@
     --gradient-card-start: #4a5bb5;
     --gradient-card-end: #5a3a8a;
   }
+
+  .code-content {
+    background: white;
+    padding: 8px;
+    border-radius: 4px;
+  }
 }
 
 body {

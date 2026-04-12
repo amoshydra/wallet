@@ -1,0 +1,34 @@
+diff --git a/lib/pdf417.js b/lib/pdf417.js
+index d37e19fc77f7a596b0caa13dbcdffaf12dda97af..cb2ba80fd28580e14ed273c4faae4b8c38a4abd6 100644
+--- a/lib/pdf417.js
++++ b/lib/pdf417.js
+@@ -6,12 +6,17 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')
+  *
+  * Ported from PHP - PDF417 class, version 1.0.005, from TCPDF library (http://www.tcpdf.org/)
+  */
++Object.defineProperty(exports, 'barcode_array', {
++	get: function() { return {}; },
++	set: function(v) {},
++	configurable: true
++});
++
+ var PDF417 = {
+ 	ROWHEIGHT: 4,
+ 	QUIETH: 2,
+ 	QUIETV: 2,
+ 
+-	barcode_array: {},
+ 	start_pattern: '11111111010101000',
+ 	stop_pattern: '111111101000101001',
+ 
+@@ -436,7 +441,9 @@ var PDF417 = {
+ 	draw: function(code, canvas, aspectratio, ecl, devicePixelRatio, lineColor) {
+ 		ecl = ecl || -1;
+ 		aspectratio = aspectratio || 2;
+-		this.barcode_array = {};
++		if (!this.barcode_array || typeof this.barcode_array !== 'object') {
++			this.barcode_array = {};
++		}
+ 		if (code === "") {
+ 			return false;
+ 		}

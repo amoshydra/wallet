@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  pdf417-generator:
+    hash: cba0ad042ea1b503fffb87c4b54299d7cb138f6a642eeb2aaaff0040661d0090
+    path: patches/pdf417-generator.patch
+
 importers:
 
   .:
@@ -19,7 +24,7 @@ importers:
         version: 0.577.0(react@19.2.4)
       pdf417-generator:
         specifier: ^1.0.5
-        version: 1.0.5
+        version: 1.0.5(patch_hash=cba0ad042ea1b503fffb87c4b54299d7cb138f6a642eeb2aaaff0040661d0090)
       qrcode.react:
         specifier: ^4.2.0
         version: 4.2.0(react@19.2.4)
@@ -4018,7 +4023,7 @@ snapshots:
       lru-cache: 11.3.3
       minipass: 7.1.3
 
-  pdf417-generator@1.0.5: {}
+  pdf417-generator@1.0.5(patch_hash=cba0ad042ea1b503fffb87c4b54299d7cb138f6a642eeb2aaaff0040661d0090): {}
 
   picocolors@1.1.1: {}
 
