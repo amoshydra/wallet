@@ -182,29 +182,49 @@ src/
 ├── App.css              # App-specific styles
 ├── components/          # Reusable components
 │   ├── CodeDisplay.tsx
-│   └── ErrorBoundary.tsx
+│   ├── DropdownMenu.tsx
+│   ├── ErrorBoundary.tsx
+│   ├── ExportModal.tsx
+│   └── ImportModal.tsx
 ├── contexts/            # React contexts
-│   └── AuthContext.tsx
+│   ├── AuthContext.tsx
+│   └── NavigationContext.tsx
 ├── pages/               # Route pages
-│   ├── HomePage.tsx
 │   ├── AddCardPage.tsx
 │   ├── CardDetailPage.tsx
 │   ├── CodePage.tsx
+│   ├── HomePage.tsx
+│   ├── SecurityPage.tsx
 │   ├── SetupPage.tsx
 │   └── UnlockPage.tsx
 ├── types/               # TypeScript type definitions
+│   ├── auth.ts
 │   ├── card.ts
 │   └── pdf417-generator.d.ts
-└── utils/                # Utility functions
+└── utils/               # Utility functions
     ├── crypto.ts
     ├── db.ts
-    └── uuid.ts
+    ├── sort.ts
+    ├── uuid.ts
+    ├── webauthn.ts
+    └── zip.ts
 tests/
 └── e2e/                 # Playwright E2E tests
-    ├── setup-flow.spec.ts
+    ├── auth.spec.ts
+    ├── delete-card.spec.ts
+    ├── edge.spec.ts
+    ├── export-import.spec.ts
     ├── lock.spec.ts
-    └── helpers/
-        └── db.ts        # Test helpers for IndexedDB
+    ├── passkey-password.spec.ts
+    ├── security-page.spec.ts
+    ├── security.spec.ts
+    ├── session.spec.ts
+    ├── setup-flow.spec.ts
+    ├── sort.spec.ts
+    └── helpers/           # Test helpers
+        ├── auth.ts
+        ├── db.ts
+        └── storage.ts
 ```
 
 ## Important Notes
@@ -213,3 +233,4 @@ tests/
 - **React Compiler**: Do not add `useMemo`, `useCallback`, or `memo` - the compiler handles this
 - **Encryption**: User password encrypts all card data stored in IndexedDB
 - **E2E Tests**: Tests are located in `tests/e2e/` and use Playwright browser automation
+- **CI/CD**: GitHub Actions runs lint, format check, tests, and deploys to GitHub Pages on push to main
