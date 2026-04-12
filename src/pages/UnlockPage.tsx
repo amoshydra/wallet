@@ -1,7 +1,9 @@
 import { useState, type SubmitEvent } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useMaskedNavigation } from '../contexts/NavigationContext';
 
 export default function UnlockPage() {
+  const { navigate } = useMaskedNavigation();
   const { unlockWithPassword, unlockWithPasskey, hasPasskey, error } = useAuth();
   const [password, setPassword] = useState('');
   const [passkeyError, setPasskeyError] = useState<string | null>(null);
@@ -64,6 +66,15 @@ export default function UnlockPage() {
             {isPasskeyLoading ? 'Authenticating...' : 'Use Passkey'}
           </button>
         )}
+
+        <div className="footer-link-container">
+          <button
+            onClick={() => navigate('/about')}
+            className="footer-link"
+          >
+            About
+          </button>
+        </div>
       </div>
     </div>
   );

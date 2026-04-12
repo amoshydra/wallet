@@ -9,6 +9,7 @@ import AddCardPage from './pages/AddCardPage';
 import CardDetailPage from './pages/CardDetailPage';
 import CodePage from './pages/CodePage';
 import SecurityPage from './pages/SecurityPage';
+import AboutPage from './pages/AboutPage';
 
 function AppContent() {
   const { isFirstTime, isLoading, isUnlocked, isHidden } = useAuth();
@@ -96,6 +97,12 @@ function AppContent() {
             component={SecurityPage}
           />
         )}
+
+        {/* About - public route available to all */}
+        <Route
+          path="/about"
+          component={AboutPage}
+        />
 
         <Route>
           {/* When locked and not first time, redirect any unknown route to unlock */}

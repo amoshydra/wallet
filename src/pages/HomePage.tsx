@@ -158,6 +158,15 @@ export default function HomePage() {
         onImport={handleImport}
         onClose={() => setShowImportModal(false)}
       />
+
+      <div className="footer-link-container">
+        <button
+          onClick={() => navigate('/about')}
+          className="footer-link"
+        >
+          About
+        </button>
+      </div>
     </div>
   );
 }
