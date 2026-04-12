@@ -85,13 +85,13 @@ export default function CardDetailPage() {
         </div>
       </header>
 
-      <div className="sensitive">
+      <div className="sensitive prose">
         {card.number && (
           <CodeDisplay
             value={card.number}
             codeType={card.codeType}
             showSelector={false}
-            fullWidth={true}
+            // fullWidth={true}
           />
         )}
 
@@ -150,7 +150,7 @@ export default function CardDetailPage() {
 
       {showDeleteConfirm && (
         <div className="modal-overlay">
-          <div className="modal">
+          <div className="modal sensitive">
             <h3>Delete Card?</h3>
             <p>Are you sure you want to delete "{card.name}"? This cannot be undone.</p>
             <div className="modal-actions">

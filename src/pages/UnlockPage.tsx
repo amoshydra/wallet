@@ -66,15 +66,6 @@ export default function UnlockPage() {
             {isPasskeyLoading ? 'Authenticating...' : 'Use Passkey'}
           </button>
         )}
-
-        <div className="footer-link-container">
-          <button
-            onClick={() => navigate('/about')}
-            className="footer-link"
-          >
-            About
-          </button>
-        </div>
       </div>
     </div>
   );

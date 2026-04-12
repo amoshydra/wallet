@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRoute } from 'wouter';
+import CodeDisplay from '../components/CodeDisplay';
 import { useAuth } from '../contexts/AuthContext';
 import { useMaskedNavigation } from '../contexts/NavigationContext';
-import CodeDisplay from '../components/CodeDisplay';
 import type { Card } from '../types/card';
 
 export default function CodePage() {
@@ -58,7 +58,7 @@ export default function CodePage() {
 
       <div className="sensitive">
         {!codeValue ? (
-          <div className="form">
+          <div className="prose-card">
             <p className="info-text">No card number stored. Enter data to generate code:</p>
             <div className="form-group">
               <label htmlFor="manual-code">Data to encode</label>

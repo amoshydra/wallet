@@ -73,22 +73,29 @@ export default function AddCardPage() {
 
   return (
     <div className="page">
-      <header className="Header">
-        <button
-          onClick={() => navigate('/')}
-          className="btn-text"
-        >
-          ← Back
-        </button>
-        <h1>{isEditing ? 'Edit Card' : 'Add Card'}</h1>
+      <header className="header">
+        <div className="header-l2">
+          <button
+            onClick={() => navigate('/')}
+            className="btn-text"
+          >
+            ← Back
+          </button>
+          <h1>{isEditing ? 'Edit Card' : 'Add Card'}</h1>
+        </div>
       </header>
 
       <form
         onSubmit={handleSubmit}
-        className="form sensitive"
+        className="prose-card sensitive"
       >
         <div className="form-group">
-          <label htmlFor="name">Name *</label>
+          <label
+            className="label__required"
+            htmlFor="name"
+          >
+            Name
+          </label>
           <input
             id="name"
             type="text"
@@ -100,7 +107,12 @@ export default function AddCardPage() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="number">Card Number *</label>
+          <label
+            className="label__required"
+            htmlFor="number"
+          >
+            Card Number
+          </label>
           <input
             id="number"
             type="text"
@@ -138,13 +150,15 @@ export default function AddCardPage() {
           )}
         </div>
 
-        <button
-          type="submit"
-          className="btn-primary"
-          disabled={isSubmitting || !name.trim() || !number.trim()}
-        >
-          {isSubmitting ? 'Saving...' : isEditing ? 'Update Card' : 'Save Card'}
-        </button>
+        <div className="form-actions">
+          <button
+            type="submit"
+            className="btn-primary"
+            disabled={isSubmitting || !name.trim() || !number.trim()}
+          >
+            {isSubmitting ? 'Saving...' : isEditing ? 'Update Card' : 'Save Card'}
+          </button>
+        </div>
       </form>
     </div>
   );

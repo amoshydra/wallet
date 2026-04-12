@@ -102,15 +102,6 @@ export default function SetupPage() {
           >
             {localError ? 'Continue without passkey' : 'Skip for now'}
           </button>
-
-          <div className="footer-link-container">
-            <button
-              onClick={() => navigate('/about')}
-              className="footer-link"
-            >
-              About
-            </button>
-          </div>
         </div>
       </div>
     );
@@ -156,23 +147,16 @@ export default function SetupPage() {
 
           {(localError || error) && <p className="error">{localError || error}</p>}
 
-          <button
-            type="submit"
-            className="btn-primary"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Setting up...' : 'Create & Start'}
-          </button>
+          <div className="form-actions">
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Setting up...' : 'Create & Start'}
+            </button>
+          </div>
         </form>
-
-        <div className="footer-link-container">
-          <button
-            onClick={() => navigate('/about')}
-            className="footer-link"
-          >
-            About
-          </button>
-        </div>
       </div>
     </div>
   );

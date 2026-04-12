@@ -127,6 +127,7 @@ export default function CodeDisplay({
             value={value}
             scale={fullWidth ? 3 : 2}
           />
+          {value}
         </div>
       );
     }
@@ -135,6 +136,7 @@ export default function CodeDisplay({
       return (
         <div className="barcode-wrapper">
           <Barcode
+            key={`${value}-${selectedType}`}
             value={value}
             format={FORMAT_MAP[selectedType as keyof typeof FORMAT_MAP]}
             width={barcodeWidth}

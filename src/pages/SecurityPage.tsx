@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useRoute } from 'wouter';
+import Dialog from '../components/Dialog';
 import { useAuth } from '../contexts/AuthContext';
 import { useMaskedNavigation } from '../contexts/NavigationContext';
-import Dialog from '../components/Dialog';
 
 export default function SecurityPage() {
   const { hasPasskey, canUsePasskey, setupPasskey, changePassword, removePasskey } = useAuth();

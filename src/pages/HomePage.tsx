@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { ArrowUpDown, MoreVertical } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import DropdownMenu from '../components/DropdownMenu';
 import ExportModal from '../components/ExportModal';
 import ImportModal from '../components/ImportModal';
@@ -9,9 +9,9 @@ import type { Card } from '../types/card';
 import {
   getSortPreference,
   setSortPreference,
+  SORT_OPTIONS,
   sortCards,
   type SortOption,
-  SORT_OPTIONS,
 } from '../utils/sort';
 
 export default function HomePage() {
@@ -91,7 +91,7 @@ export default function HomePage() {
       </header>
 
       {sortedCards.length === 0 ? (
-        <div className="empty-state">
+        <div className="empty-state prose">
           <p>No cards yet</p>
           <button
             onClick={() => navigate('/add')}
@@ -102,7 +102,7 @@ export default function HomePage() {
         </div>
       ) : (
         <div
-          className="card-grid sensitive"
+          className="card-grid sensitive prose"
           key={refreshKey}
         >
           {sortedCards.map((card: Card) => (
@@ -158,15 +158,6 @@ export default function HomePage() {
         onImport={handleImport}
         onClose={() => setShowImportModal(false)}
       />
-
-      <div className="footer-link-container">
-        <button
-          onClick={() => navigate('/about')}
-          className="footer-link"
-        >
-          About
-        </button>
-      </div>
     </div>
   );
 }

@@ -1,15 +1,15 @@
 import { Route, Router, Switch } from 'wouter';
-import { useHashLocation } from 'wouter/use-hash-location';
+import { navigate, useHashLocation } from 'wouter/use-hash-location';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NavigationProvider, useMaskedNavigation } from './contexts/NavigationContext';
-import SetupPage from './pages/SetupPage';
-import UnlockPage from './pages/UnlockPage';
-import HomePage from './pages/HomePage';
+import AboutPage from './pages/AboutPage';
 import AddCardPage from './pages/AddCardPage';
 import CardDetailPage from './pages/CardDetailPage';
 import CodePage from './pages/CodePage';
+import HomePage from './pages/HomePage';
 import SecurityPage from './pages/SecurityPage';
-import AboutPage from './pages/AboutPage';
+import SetupPage from './pages/SetupPage';
+import UnlockPage from './pages/UnlockPage';
 
 function AppContent() {
   const { isFirstTime, isLoading, isUnlocked, isHidden } = useAuth();
@@ -115,6 +115,15 @@ function AppContent() {
           )}
         </Route>
       </Switch>
+
+      <div className="footer-link-container">
+        <button
+          onClick={() => navigate('/about')}
+          className="footer-link"
+        >
+          About
+        </button>
+      </div>
     </div>
   );
 }
