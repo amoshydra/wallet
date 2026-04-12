@@ -1,7 +1,23 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import babel from '@rolldown/plugin-babel';
 import { VitePWA } from 'vite-plugin-pwa';
+
+const CSP_DIRECTIVE = `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; worker-src 'self'; connect-src 'self'`;
+const CSP_PLACEHOLDER = '<!-- CSP -->';
+
+function cspPlugin(): Plugin {
+  return {
+    name: 'vite-plugin-csp',
+    apply: 'build',
+    transformIndexHtml(html) {
+      return html.replace(
+        CSP_PLACEHOLDER,
+        `<meta http-equiv="Content-Security-Policy" content="${CSP_DIRECTIVE}" />`,
+      );
+    },
+  };
+}
 
 const pwaOptions = {
   registerType: 'autoUpdate' as const,
@@ -89,7 +105,7 @@ const pwaOptions = {
 // https://vite.dev/config/
 export default defineConfig({
   base: process.env.BUILD_PUBLIC_PATH || '/',
-  plugins: [react(), babel({ presets: [reactCompilerPreset()] }), VitePWA(pwaOptions)],
+  plugins: [react(), babel({ presets: [reactCompilerPreset()] }), VitePWA(pwaOptions), cspPlugin()],
   server: {
     host: true,
     allowedHosts: true,
