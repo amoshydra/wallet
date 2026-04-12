@@ -147,23 +147,17 @@ export default function HomePage() {
         +
       </button>
 
-      {showExportModal && (
-        <div className="sensitive">
-          <ExportModal
-            cards={sortedCards}
-            onClose={() => setShowExportModal(false)}
-          />
-        </div>
-      )}
+      <ExportModal
+        open={showExportModal}
+        cards={sortedCards}
+        onClose={() => setShowExportModal(false)}
+      />
 
-      {showImportModal && (
-        <div className="sensitive">
-          <ImportModal
-            onImport={handleImport}
-            onClose={() => setShowImportModal(false)}
-          />
-        </div>
-      )}
+      <ImportModal
+        open={showImportModal}
+        onImport={handleImport}
+        onClose={() => setShowImportModal(false)}
+      />
     </div>
   );
 }

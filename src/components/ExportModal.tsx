@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import type { Card } from '../types/card';
 import { createEncryptedZip, generateCSVPreview } from '../utils/zip';
+import Dialog from './Dialog';
 
 interface ExportModalProps {
+  open: boolean;
   cards: Card[];
   onClose: () => void;
 }
 
-export default function ExportModal({ cards, onClose }: ExportModalProps) {
+export default function ExportModal({ open, cards, onClose }: ExportModalProps) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -45,77 +47,81 @@ export default function ExportModal({ cards, onClose }: ExportModalProps) {
     }
   };
 
+  const handleClose = () => {
+    setPassword('');
+    setConfirmPassword('');
+    setError(null);
+    onClose();
+  };
+
   return (
-    <div
-      className="modal-overlay"
-      onClick={onClose}
+    <Dialog
+      open={open}
+      onClose={handleClose}
     >
-      <div
-        className="modal modal-export"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3>Export Cards</h3>
+      <h3>Export Cards</h3>
 
-        <div className="csv-preview">
-          <label>Preview (CSV format):</label>
-          <pre>{csvPreview}</pre>
-          {hasMoreCards && <p className="preview-note">... and {cards.length - 5} more cards</p>}
-        </div>
-
-        <div className="form-group">
-          <label>Export Password (optional)</label>
-          <div className="password-input-wrapper">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Leave empty for unencrypted ZIP"
-            />
-            <button
-              type="button"
-              className="btn-text"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? 'Hide' : 'Show'}
-            </button>
-          </div>
-          <p className="form-hint">
-            This password is separate from your app password. You will need it to import the
-            exported file.
-          </p>
-        </div>
-
-        {password && (
-          <div className="form-group">
-            <label>Confirm Password</label>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm your password"
-            />
-          </div>
-        )}
-
-        {error && <p className="error">{error}</p>}
-
-        <div className="modal-actions">
-          <button
-            onClick={onClose}
-            className="btn-secondary"
-            disabled={isExporting}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleExport}
-            className="btn-primary"
-            disabled={isExporting}
-          >
-            {isExporting ? 'Exporting...' : 'Download ZIP'}
-          </button>
-        </div>
+      <div className="csv-preview">
+        <label>Preview (CSV format):</label>
+        <pre>{csvPreview}</pre>
+        {hasMoreCards && <p className="preview-note">... and {cards.length - 5} more cards</p>}
       </div>
-    </div>
+
+      <div className="form-group">
+        <label htmlFor="exportPassword">Export Password (optional)</label>
+        <div className="password-input-wrapper">
+          <input
+            id="exportPassword"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Leave empty for unencrypted ZIP"
+          />
+          <button
+            type="button"
+            className="btn-text"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? 'Hide' : 'Show'}
+          </button>
+        </div>
+        <p className="form-hint">
+          This password is separate from your app password. You will need it to import the exported
+          file.
+        </p>
+      </div>
+
+      {password && (
+        <div className="form-group">
+          <label htmlFor="confirmExportPassword">Confirm Password</label>
+          <input
+            id="confirmExportPassword"
+            type={showPassword ? 'text' : 'password'}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirm your password"
+          />
+        </div>
+      )}
+
+      {error && <p className="error">{error}</p>}
+
+      <div className="modal-actions">
+        <button
+          onClick={handleClose}
+          className="btn-secondary"
+          disabled={isExporting}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleExport}
+          className="btn-primary"
+          disabled={isExporting}
+        >
+          {isExporting ? 'Exporting...' : 'Download ZIP'}
+        </button>
+      </div>
+    </Dialog>
   );
 }

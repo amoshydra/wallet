@@ -9,46 +9,46 @@ test.describe('Export/Import Feature', () => {
   test('should show export modal when clicking Export', async ({ page }) => {
     await expect(page.locator('h1')).toHaveText('My Cards');
     await page.locator('button[aria-label="Menu"]').click();
-    await page.locator('button:has-text("Export")').click();
+    await page.locator('.dropdown-item:has-text("Export")').click();
 
-    await expect(page.locator('text=Export Cards')).toBeVisible();
+    await expect(page.locator('h3:has-text("Export Cards")')).toBeVisible();
     await expect(page.locator('text=Preview (CSV format):')).toBeVisible();
     await expect(page.locator('text=Export Password (optional)')).toBeVisible();
     await expect(
       page.locator('text=This password is separate from your app password'),
     ).toBeVisible();
     await expect(page.locator('button:has-text("Download ZIP")')).toBeVisible();
-    await expect(page.locator('button:has-text("Cancel")')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible();
   });
 
   test('should show import modal when clicking Import', async ({ page }) => {
     await expect(page.locator('h1')).toHaveText('My Cards');
     await page.locator('button[aria-label="Menu"]').click();
-    await page.locator('button:has-text("Import")').click();
+    await page.locator('.dropdown-item:has-text("Import")').click();
 
-    await expect(page.locator('text=Import Cards')).toBeVisible();
+    await expect(page.locator('h3:has-text("Import Cards")')).toBeVisible();
     await expect(page.locator('text=Select ZIP File')).toBeVisible();
     await expect(page.locator('text=Password (if encrypted)')).toBeVisible();
     await expect(page.locator('button:has-text("Preview Import")')).toBeVisible();
-    await expect(page.locator('button:has-text("Cancel")')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible();
   });
 
   test('should close export modal when clicking Cancel', async ({ page }) => {
     await page.locator('button[aria-label="Menu"]').click();
-    await page.locator('button:has-text("Export")').click();
-    await expect(page.locator('text=Export Cards')).toBeVisible();
+    await page.locator('.dropdown-item:has-text("Export")').click();
+    await expect(page.locator('h3:has-text("Export Cards")')).toBeVisible();
 
-    await page.locator('button:has-text("Cancel")').click();
-    await expect(page.locator('text=Export Cards')).not.toBeVisible();
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await expect(page.locator('h3:has-text("Export Cards")')).not.toBeVisible();
   });
 
   test('should close import modal when clicking Cancel', async ({ page }) => {
     await page.locator('button[aria-label="Menu"]').click();
-    await page.locator('button:has-text("Import")').click();
-    await expect(page.locator('text=Import Cards')).toBeVisible();
+    await page.locator('.dropdown-item:has-text("Import")').click();
+    await expect(page.locator('h3:has-text("Import Cards")')).toBeVisible();
 
-    await page.locator('button:has-text("Cancel")').click();
-    await expect(page.locator('text=Import Cards')).not.toBeVisible();
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await expect(page.locator('h3:has-text("Import Cards")')).not.toBeVisible();
   });
 
   test('should export cards as unencrypted ZIP', async ({ page }) => {
@@ -56,7 +56,7 @@ test.describe('Export/Import Feature', () => {
     await addCard(page, 'Test Card 2', '9876543210');
 
     await page.locator('button[aria-label="Menu"]').click();
-    await page.locator('button:has-text("Export")').click();
+    await page.locator('.dropdown-item:has-text("Export")').click();
 
     const downloadPromise = page.waitForEvent('download');
     await page.locator('button:has-text("Download ZIP")').click();
@@ -69,16 +69,10 @@ test.describe('Export/Import Feature', () => {
     await addCard(page, 'Encrypted Card', '111222333');
 
     await page.locator('button[aria-label="Menu"]').click();
-    await page.locator('button:has-text("Export")').click();
+    await page.locator('.dropdown-item:has-text("Export")').click();
 
-    const passwordInput = page
-      .locator('.modal-export input[type="password"], .modal-export input[type="text"]')
-      .first();
-    await passwordInput.fill('exportpass');
-    await page
-      .locator('.modal-export input[type="password"], .modal-export input[type="text"]')
-      .nth(1)
-      .fill('exportpass');
+    await page.getByLabel('Export Password (optional)').fill('exportpass');
+    await page.getByLabel('Confirm Password').fill('exportpass');
 
     const downloadPromise = page.waitForEvent('download');
     await page.locator('button:has-text("Download ZIP")').click();
@@ -91,16 +85,10 @@ test.describe('Export/Import Feature', () => {
     await addCard(page, 'Test Card', '1234567890');
 
     await page.locator('button[aria-label="Menu"]').click();
-    await page.locator('button:has-text("Export")').click();
+    await page.locator('.dropdown-item:has-text("Export")').click();
 
-    const passwordInput = page
-      .locator('.modal-export input[type="password"], .modal-export input[type="text"]')
-      .first();
-    await passwordInput.fill('password1');
-    await page
-      .locator('.modal-export input[type="password"], .modal-export input[type="text"]')
-      .nth(1)
-      .fill('password2');
+    await page.getByLabel('Export Password (optional)').fill('password1');
+    await page.getByLabel('Confirm Password').fill('password2');
 
     await page.locator('button:has-text("Download ZIP")').click();
 
@@ -109,14 +97,17 @@ test.describe('Export/Import Feature', () => {
 
   test('should show error for non-ZIP file on import', async ({ page }) => {
     await page.locator('button[aria-label="Menu"]').click();
-    await page.locator('button:has-text("Import")').click();
+    await page.locator('.dropdown-item:has-text("Import")').click();
 
     const fileContent = 'not a zip file';
-    await page.setInputFiles('input[type="file"]', {
-      name: 'test.txt',
-      mimeType: 'text/plain',
-      buffer: Buffer.from(fileContent),
-    });
+    await page
+      .locator('input[type="file"]')
+      .first()
+      .setInputFiles({
+        name: 'test.txt',
+        mimeType: 'text/plain',
+        buffer: Buffer.from(fileContent),
+      });
 
     await expect(page.locator('.error')).toHaveText('Please select a ZIP file');
   });
@@ -132,9 +123,9 @@ test.describe('Export/Import Feature', () => {
     await completeSetup(page, 'newpassword123');
 
     await page.locator('button[aria-label="Menu"]').click();
-    await page.locator('button:has-text("Import")').click();
+    await page.locator('.dropdown-item:has-text("Import")').click();
 
-    await page.setInputFiles('input[type="file"]', {
+    await page.locator('input[type="file"]').first().setInputFiles({
       name: 'import.zip',
       mimeType: 'application/zip',
       buffer: zipBuffer,
@@ -162,16 +153,10 @@ test.describe('Export/Import Feature', () => {
     await addCard(page, 'Secret Card', '9999999999');
 
     await page.locator('button[aria-label="Menu"]').click();
-    await page.locator('button:has-text("Export")').click();
+    await page.locator('.dropdown-item:has-text("Export")').click();
 
-    const passwordInput = page
-      .locator('.modal-export input[type="password"], .modal-export input[type="text"]')
-      .first();
-    await passwordInput.fill('mysecretpass');
-    await page
-      .locator('.modal-export input[type="password"], .modal-export input[type="text"]')
-      .nth(1)
-      .fill('mysecretpass');
+    await page.getByLabel('Export Password (optional)').fill('mysecretpass');
+    await page.getByLabel('Confirm Password').fill('mysecretpass');
 
     const downloadPromise = page.waitForEvent('download');
     await page.locator('button:has-text("Download ZIP")').click();
@@ -186,18 +171,15 @@ test.describe('Export/Import Feature', () => {
     await completeSetup(page, 'newpassword123');
 
     await page.locator('button[aria-label="Menu"]').click();
-    await page.locator('button:has-text("Import")').click();
+    await page.locator('.dropdown-item:has-text("Import")').click();
 
-    await page.setInputFiles('input[type="file"]', {
+    await page.locator('input[type="file"]').first().setInputFiles({
       name: 'import.zip',
       mimeType: 'application/zip',
       buffer: zipBuffer,
     });
 
-    const importPasswordInput = page
-      .locator('.modal-import input[type="password"], .modal-import input[type="text"]')
-      .first();
-    await importPasswordInput.fill('mysecretpass');
+    await page.getByLabel('Password (if encrypted)').fill('mysecretpass');
 
     await page.locator('button:has-text("Preview Import")').click();
 
@@ -221,7 +203,7 @@ async function addCard(page: import('@playwright/test').Page, name: string, numb
 
 async function exportAndGetZipBuffer(page: import('@playwright/test').Page): Promise<Buffer> {
   await page.locator('button[aria-label="Menu"]').click();
-  await page.locator('button:has-text("Export")').click();
+  await page.locator('.dropdown-item:has-text("Export")').click();
 
   const downloadPromise = page.waitForEvent('download');
   await page.locator('button:has-text("Download ZIP")').click();
