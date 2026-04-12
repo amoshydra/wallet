@@ -21,6 +21,7 @@ import {
   hasEncryptedMasterKey,
   getDeviceKey,
   setDeviceKey,
+  clearDeviceKey,
 } from '../utils/db';
 import { canUsePasskey, createPasskey, authenticateWithPasskey } from '../utils/webauthn';
 
@@ -37,6 +38,7 @@ interface AuthContextType {
   unlockWithPassword: (password: string) => Promise<void>;
   unlockWithPasskey: () => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  removePasskey: (password: string) => Promise<void>;
   lock: () => void;
   getCards: () => AppData['cards'];
   saveCards: (cards: AppData['cards']) => Promise<void>;
@@ -397,6 +399,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const removePasskey = async (password: string) => {
+    setError(null);
+    try {
+      const encryptedKey = await getEncryptedMasterKey();
+      if (!encryptedKey) {
+        throw new Error('No authentication set up');
+      }
+
+      const passwordKey = await deriveKey(password, encryptedKey.salt);
+      try {
+        await decryptMasterKey(
+          encryptedKey.passwordEncrypted,
+          encryptedKey.passwordIv,
+          passwordKey,
+        );
+      } catch {
+        throw new Error('Incorrect current password');
+      }
+
+      clearDeviceKey();
+
+      await setEncryptedMasterKey(
+        encryptedKey.passwordEncrypted,
+        encryptedKey.passwordIv,
+        encryptedKey.salt,
+      );
+
+      setHasPasskey(false);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Failed to remove passkey';
+      setError(message);
+      throw new Error(message);
+    }
+  };
+
   const saveCards = async (newCards: import('../types/card').Card[]) => {
     if (!masterKeyRef.current) return;
     const data: AppData = { cards: newCards };
@@ -454,6 +491,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         unlockWithPassword,
         unlockWithPasskey,
         changePassword,
+        removePasskey,
         lock,
         getCards: () => cards,
         saveCards,

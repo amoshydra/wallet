@@ -2,11 +2,16 @@ import { useEffect, useState } from 'react';
 import { useRoute } from 'wouter';
 import { useAuth } from '../contexts/AuthContext';
 import { useMaskedNavigation } from '../contexts/NavigationContext';
+import Dialog from '../components/Dialog';
 
 export default function SecurityPage() {
-  const { hasPasskey, canUsePasskey, setupPasskey, changePassword } = useAuth();
+  const { hasPasskey, canUsePasskey, setupPasskey, changePassword, removePasskey } = useAuth();
   const { navigate } = useMaskedNavigation();
   const [isSettingUpPasskey, setIsSettingUpPasskey] = useState(false);
+  const [isRemovingPasskey, setIsRemovingPasskey] = useState(false);
+  const [showRemovePasskeyModal, setShowRemovePasskeyModal] = useState(false);
+  const [removePassword, setRemovePassword] = useState('');
+  const [removePasswordError, setRemovePasswordError] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -56,6 +61,24 @@ export default function SecurityPage() {
       alert(message);
     } finally {
       setIsSettingUpPasskey(false);
+    }
+  };
+
+  const handleRemovePasskey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRemovePasswordError('');
+    setIsRemovingPasskey(true);
+    try {
+      await removePasskey(removePassword);
+      setRemovePassword('');
+      setShowRemovePasskeyModal(false);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Failed to remove passkey';
+      setRemovePasswordError(message);
+    } finally {
+      setIsRemovingPasskey(false);
     }
   };
 
@@ -170,7 +193,18 @@ export default function SecurityPage() {
             </>
           )}
 
-          {hasPasskey && <p style={{ color: '#22c55e' }}>Quick Unlock is enabled ✓</p>}
+          {hasPasskey && (
+            <div>
+              <p style={{ color: '#22c55e', marginBottom: '12px' }}>Quick Unlock is enabled ✓</p>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setShowRemovePasskeyModal(true)}
+              >
+                Remove Passkey
+              </button>
+            </div>
+          )}
 
           {!canUsePasskey && (
             <p style={{ color: '#666' }}>Quick Unlock is not supported on this device</p>
@@ -234,6 +268,57 @@ export default function SecurityPage() {
           </form>
         </section>
       </div>
+
+      <Dialog
+        open={showRemovePasskeyModal}
+        onClose={() => {
+          setShowRemovePasskeyModal(false);
+          setRemovePassword('');
+          setRemovePasswordError('');
+        }}
+      >
+        <h3>Remove Passkey</h3>
+        <p className="dialog-description">
+          Enter your password to confirm removing passkey. You will need to use your password to
+          unlock the wallet after this.
+        </p>
+        <form onSubmit={handleRemovePasskey}>
+          <div className="form-group">
+            <label htmlFor="removePasskeyPassword">Password</label>
+            <input
+              id="removePasskeyPassword"
+              type="password"
+              value={removePassword}
+              onChange={(e) => setRemovePassword(e.target.value)}
+              placeholder="Enter password"
+              autoComplete="current-password"
+              disabled={isRemovingPasskey}
+            />
+            {removePasswordError && <p className="error">{removePasswordError}</p>}
+          </div>
+          <div className="modal-actions">
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => {
+                setShowRemovePasskeyModal(false);
+                setRemovePassword('');
+                setRemovePasswordError('');
+              }}
+              disabled={isRemovingPasskey}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={isRemovingPasskey || !removePassword}
+            >
+              {isRemovingPasskey ? 'Removing...' : 'Remove'}
+            </button>
+          </div>
+        </form>
+      </Dialog>
     </div>
   );
 }

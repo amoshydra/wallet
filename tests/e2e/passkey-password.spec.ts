@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { clearIndexedDB } from './helpers/db';
+import { setupWithPasskey, unlockWithPassword } from './helpers/auth';
 
 test.describe('Passkey and Password Authentication', () => {
   test('should login with password after setting up passkey', async ({ page }) => {
@@ -74,5 +75,52 @@ test.describe('Passkey and Password Authentication', () => {
     // Check that password unlock is available
     await expect(page.locator('input[type="password"]')).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toBeVisible();
+  });
+
+  test('should remove passkey with correct password', async ({ page }) => {
+    await setupWithPasskey(page, 'testpass123');
+
+    await page.locator('button:has-text("Lock")').click();
+    await page.waitForURL('**/#/unlock');
+
+    await unlockWithPassword(page, 'testpass123');
+    await expect(page.locator('h1')).toHaveText('My Cards');
+
+    await page.locator('button[aria-label="Menu"]').click();
+    await page.locator('button:has-text("Security")').click();
+    await page.waitForURL('**/#/security');
+
+    await expect(page.locator('text=Quick Unlock is enabled')).toBeVisible();
+    await page.locator('button:has-text("Remove Passkey")').click();
+
+    await expect(page.locator('h3:has-text("Remove Passkey")')).toBeVisible();
+
+    await page.locator('#removePasskeyPassword').fill('testpass123');
+    await page.locator('button[type="submit"]:has-text("Remove")').click();
+
+    await expect(page.locator('text=Quick Unlock is enabled')).not.toBeVisible();
+  });
+
+  test('should fail to remove passkey with wrong password', async ({ page }) => {
+    await setupWithPasskey(page, 'testpass123');
+
+    await page.locator('button:has-text("Lock")').click();
+    await page.waitForURL('**/#/unlock');
+
+    await unlockWithPassword(page, 'testpass123');
+    await expect(page.locator('h1')).toHaveText('My Cards');
+
+    await page.locator('button[aria-label="Menu"]').click();
+    await page.locator('button:has-text("Security")').click();
+    await page.waitForURL('**/#/security');
+
+    await expect(page.locator('text=Quick Unlock is enabled')).toBeVisible();
+    await page.locator('button:has-text("Remove Passkey")').click();
+
+    await page.locator('#removePasskeyPassword').fill('wrongpassword');
+    await page.locator('button[type="submit"]:has-text("Remove")').click();
+
+    await expect(page.locator('text=Incorrect current password')).toBeVisible();
+    await expect(page.locator('text=Quick Unlock is enabled')).toBeVisible();
   });
 });
