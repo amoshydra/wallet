@@ -29,7 +29,7 @@ const pwaOptions = {
     theme_color: '#ffffff',
     background_color: '#ffffff',
     display: 'standalone' as const,
-    start_url: '/',
+    start_url: process.env.BUILD_PUBLIC_PATH || '/',
     icons: [
       {
         src: 'favicon.svg',
