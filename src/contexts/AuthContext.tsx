@@ -36,6 +36,7 @@ interface AuthContextType {
   setupPasskey: () => Promise<PasskeyCredential | null>;
   unlockWithPassword: (password: string) => Promise<void>;
   unlockWithPasskey: () => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   lock: () => void;
   getCards: () => AppData['cards'];
   saveCards: (cards: AppData['cards']) => Promise<void>;
@@ -351,6 +352,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    setError(null);
+    try {
+      const encryptedKey = await getEncryptedMasterKey();
+      if (!encryptedKey) {
+        throw new Error('No authentication set up');
+      }
+
+      const currentPasswordKey = await deriveKey(currentPassword, encryptedKey.salt);
+      try {
+        await decryptMasterKey(
+          encryptedKey.passwordEncrypted,
+          encryptedKey.passwordIv,
+          currentPasswordKey,
+        );
+      } catch {
+        throw new Error('Incorrect current password');
+      }
+
+      if (!masterKeyRef.current) {
+        throw new Error('Not authenticated');
+      }
+
+      const newSalt = await generateSalt();
+      const newPasswordKey = await deriveKey(newPassword, newSalt);
+      const { encrypted: newPasswordEncrypted, iv: newPasswordIv } = await encryptMasterKey(
+        masterKeyRef.current,
+        newPasswordKey,
+      );
+
+      await setEncryptedMasterKey(
+        newPasswordEncrypted,
+        newPasswordIv,
+        newSalt,
+        encryptedKey.deviceEncrypted,
+        encryptedKey.deviceIv,
+        encryptedKey.passkeyCredentialId,
+      );
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Failed to change password';
+      setError(message);
+      throw new Error(message);
+    }
+  };
+
   const saveCards = async (newCards: import('../types/card').Card[]) => {
     if (!masterKeyRef.current) return;
     const data: AppData = { cards: newCards };
@@ -407,6 +453,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setupPasskey,
         unlockWithPassword,
         unlockWithPasskey,
+        changePassword,
         lock,
         getCards: () => cards,
         saveCards,

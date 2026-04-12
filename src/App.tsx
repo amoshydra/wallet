@@ -90,6 +90,12 @@ function AppContent() {
             component={SecurityPage}
           />
         )}
+        {isUnlocked && (
+          <Route
+            path="/security/success"
+            component={SecurityPage}
+          />
+        )}
 
         <Route>
           {/* When locked and not first time, redirect any unknown route to unlock */}

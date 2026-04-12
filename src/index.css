@@ -298,6 +298,11 @@ body {
   font-size: 14px;
 }
 
+.form-group .error {
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
 .empty-state {
   text-align: center;
   padding: 60px 20px;

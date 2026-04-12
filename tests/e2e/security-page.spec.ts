@@ -73,7 +73,7 @@ test.describe('Security Page', () => {
   });
 
   test.describe('Password Section', () => {
-    test('should show password section with coming soon message', async ({ page }) => {
+    test('should show password change form', async ({ page }) => {
       await setupWithPassword(page, 'testpassword123');
 
       await page.locator('button[aria-label="Menu"]').click();
@@ -81,9 +81,76 @@ test.describe('Security Page', () => {
 
       await page.waitForURL('**/#/security');
 
-      // Should show Password section
+      // Should show Password section with change form
       await expect(page.locator('h2:has-text("Password")')).toBeVisible();
-      await expect(page.locator('p:has-text("Change password coming soon")')).toBeVisible();
+      await expect(page.locator('input#currentPassword')).toBeVisible();
+      await expect(page.locator('input#newPassword')).toBeVisible();
+      await expect(page.locator('input#confirmPassword')).toBeVisible();
+      await expect(page.locator('button:has-text("Change Password")')).toBeVisible();
+    });
+
+    test('should change password successfully', async ({ page }) => {
+      await setupWithPassword(page, 'oldpassword123');
+
+      await page.locator('button[aria-label="Menu"]').click();
+      await page.locator('button:has-text("Security")').click();
+
+      await page.waitForURL('**/#/security');
+
+      // Fill in password change form
+      await page.locator('input#currentPassword').fill('oldpassword123');
+      await page.locator('input#newPassword').fill('newpassword456');
+      await page.locator('input#confirmPassword').fill('newpassword456');
+      await page.locator('button:has-text("Change Password")').click();
+
+      // Should navigate to success page
+      await page.waitForURL('**/#/security/success');
+      await expect(page.locator('p:has-text("Password changed successfully")')).toBeVisible();
+
+      // Should redirect back to security page after 2 seconds
+      await page.waitForURL('**/#/security', { timeout: 3000 });
+    });
+
+    test('should show error for incorrect current password', async ({ page }) => {
+      await setupWithPassword(page, 'testpassword123');
+
+      await page.locator('button[aria-label="Menu"]').click();
+      await page.locator('button:has-text("Security")').click();
+
+      await page.waitForURL('**/#/security');
+
+      // Fill in form with wrong current password
+      await page.locator('input#currentPassword').fill('wrongpassword');
+      await page.locator('input#newPassword').fill('newpassword456');
+      await page.locator('input#confirmPassword').fill('newpassword456');
+      await page.locator('button:has-text("Change Password")').click();
+
+      // Should show error and stay on page
+      await expect(page.locator('p:has-text("Incorrect current password")')).toBeVisible();
+      expect(page.url()).toContain('#/security');
+    });
+
+    test('should show inline error when new passwords do not match', async ({ page }) => {
+      await setupWithPassword(page, 'testpassword123');
+
+      await page.locator('button[aria-label="Menu"]').click();
+      await page.locator('button:has-text("Security")').click();
+
+      await page.waitForURL('**/#/security');
+
+      // Fill in form with mismatched new passwords
+      await page.locator('input#currentPassword').fill('testpassword123');
+      await page.locator('input#newPassword').fill('newpassword456');
+      await page.locator('input#confirmPassword').fill('differentpassword');
+
+      // Should show inline error immediately and disable submit button
+      await expect(page.locator('p:has-text("Passwords do not match")')).toBeVisible();
+
+      // Button should be disabled due to validation error
+      const button = page.locator('button:has-text("Change Password")');
+      await expect(button).toBeDisabled();
+
+      expect(page.url()).toContain('#/security');
     });
   });
 
