@@ -52,6 +52,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 const AUTO_LOCK_MS = 5 * 60 * 1000;
 const CHECK_INTERVAL_MS = 30000;
+const LAST_ACTIVITY_KEY = 'wallet_lastActivity';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [location, setLocation] = useLocation();
@@ -114,7 +115,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const handleActivity = () => {
-      lastActivityRef.current = Date.now();
+      const now = Date.now();
+      lastActivityRef.current = now;
+      sessionStorage.setItem(LAST_ACTIVITY_KEY, String(now));
     };
 
     window.addEventListener('click', handleActivity);
@@ -135,11 +138,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const handleFocus = () => {
-      // Window gained focus
       setIsHidden(false);
-      // Check if we should lock when returning to foreground
-      if (isUnlocked && Date.now() - lastActivityRef.current > AUTO_LOCK_MS) {
-        lock();
+      if (isUnlocked) {
+        const lastActivity = sessionStorage.getItem(LAST_ACTIVITY_KEY);
+        if (lastActivity && Date.now() - parseInt(lastActivity, 10) > AUTO_LOCK_MS) {
+          lock();
+        }
       }
     };
 
@@ -147,22 +151,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const hidden = document.visibilityState === 'hidden';
       setIsHidden(hidden);
 
-      if (!hidden) {
-        // Check if we should lock when returning to foreground
-        if (isUnlocked && Date.now() - lastActivityRef.current > AUTO_LOCK_MS) {
+      if (!hidden && isUnlocked) {
+        const lastActivity = sessionStorage.getItem(LAST_ACTIVITY_KEY);
+        if (lastActivity && Date.now() - parseInt(lastActivity, 10) > AUTO_LOCK_MS) {
           lock();
         }
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      if (isUnlocked) {
+        lock();
       }
     };
 
     window.addEventListener('blur', handleBlur);
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
       window.removeEventListener('blur', handleBlur);
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [isUnlocked]);
 
@@ -170,7 +182,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!isUnlocked) return;
 
     checkIntervalRef.current = window.setInterval(() => {
-      if (Date.now() - lastActivityRef.current > AUTO_LOCK_MS) {
+      const lastActivity = sessionStorage.getItem(LAST_ACTIVITY_KEY);
+      if (lastActivity && Date.now() - parseInt(lastActivity, 10) > AUTO_LOCK_MS) {
         lock();
       }
     }, CHECK_INTERVAL_MS);
