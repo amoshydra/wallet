@@ -113,12 +113,12 @@ export default function AddCardPage() {
           >
             Card Number
           </label>
-          <input
+          <textarea
             id="number"
-            type="text"
             value={number}
             onChange={(e) => setNumber(e.target.value)}
             placeholder="Card number"
+            rows={4}
             required
           />
         </div>

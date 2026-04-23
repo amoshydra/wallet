@@ -238,7 +238,8 @@ body,
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 12px;
   border: 1px solid var(--border-default);
@@ -246,13 +247,20 @@ body,
   font-size: 16px;
   background: var(--bg-input);
   color: var(--text-primary);
+  font-family: inherit;
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   outline: 3px solid var(--border-input-focus);
   outline-offset: 2px;
   border-color: transparent;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
 }
 
 .btn-primary {
