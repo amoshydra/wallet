@@ -53,7 +53,7 @@ const pwaOptions = {
     ],
   },
   workbox: {
-    globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+    globPatterns: ['**/*.{js,css,html,svg,png,woff2,mp4}'],
     runtimeCaching: [
       {
         urlPattern: /\.(?:js|css)$/i,
