@@ -7,7 +7,7 @@ Get started here https://amoshydra.github.io/wallet
 <br><br><br>
 
 > ## ⚠️ Work in Progress
-> 
+>
 > This app is still being built! Things might break, and your data could be lost when updates roll out. Consider exporting your cards regularly as backup.
 
 <br><br><br>
