@@ -4,6 +4,7 @@ import CodeDisplay from '../components/CodeDisplay';
 import { useAuth } from '../contexts/AuthContext';
 import { useMaskedNavigation } from '../contexts/NavigationContext';
 import type { Card } from '../types/card';
+import { getCardGradient } from '../utils/colors';
 
 export default function CardDetailPage() {
   const { getCards, deleteCard, updateCard } = useAuth();
@@ -106,7 +107,15 @@ export default function CardDetailPage() {
               className="card-detail-image"
             />
           ) : (
-            <div className="card-detail-placeholder">
+            <div
+              className="card-detail-placeholder"
+              style={
+                {
+                  '--card-gradient-start': getCardGradient(card).start,
+                  '--card-gradient-end': getCardGradient(card).end,
+                } as React.CSSProperties
+              }
+            >
               <span>{card.name[0].toUpperCase()}</span>
             </div>
           )}

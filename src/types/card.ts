@@ -21,6 +21,8 @@ export interface Card {
   codeType?: CodeType;
   createdAt: number;
   lastViewedAt?: number;
+  colorIndex?: number;
+  customColor?: string;
 }
 
 export interface AppData {

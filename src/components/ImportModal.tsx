@@ -62,6 +62,8 @@ export default function ImportModal({ open, onImport, onClose }: ImportModalProp
         number: card.number,
         codeType: card.codeType,
         imageData: card.imageData,
+        colorIndex: card.colorIndex,
+        customColor: card.customColor,
       }));
       await onImport(cardsToAdd);
       onClose();

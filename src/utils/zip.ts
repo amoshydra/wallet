@@ -21,7 +21,16 @@ function escapeCSVField(field: string | undefined): string {
 }
 
 function cardsToCSV(cards: Card[]): string {
-  const headers = ['id', 'name', 'number', 'codeType', 'createdAt', 'imageFile'];
+  const headers = [
+    'id',
+    'name',
+    'number',
+    'codeType',
+    'createdAt',
+    'imageFile',
+    'colorIndex',
+    'customColor',
+  ];
   const rows = cards.map((card) => {
     const imageFile = card.imageData ? `images/${card.id}.png` : '';
     return [
@@ -31,6 +40,8 @@ function cardsToCSV(cards: Card[]): string {
       escapeCSVField(card.codeType),
       escapeCSVField(String(card.createdAt)),
       escapeCSVField(imageFile),
+      escapeCSVField(card.colorIndex !== undefined ? String(card.colorIndex) : ''),
+      escapeCSVField(card.customColor),
     ].join(',');
   });
   return [headers.join(','), ...rows].join('\n');
@@ -132,6 +143,8 @@ export interface ImportedCard {
   number?: string;
   codeType?: import('../types/card').CodeType;
   imageData?: string;
+  colorIndex?: number;
+  customColor?: string;
 }
 
 export interface ImportResult {
@@ -174,6 +187,11 @@ export async function readEncryptedZip(file: File, password: string): Promise<Im
         number: row.number || undefined,
         codeType: (row.codeType as import('../types/card').CodeType) || undefined,
         imageData: undefined,
+        colorIndex:
+          row.colorIndex !== undefined && row.colorIndex !== ''
+            ? parseInt(row.colorIndex, 10)
+            : undefined,
+        customColor: row.customColor || undefined,
       };
 
       if (row.imageFile) {

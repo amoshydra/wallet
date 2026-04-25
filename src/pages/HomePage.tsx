@@ -6,6 +6,7 @@ import ImportModal from '../components/ImportModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useMaskedNavigation } from '../contexts/NavigationContext';
 import type { Card } from '../types/card';
+import { getCardGradient } from '../utils/colors';
 import {
   getSortPreference,
   setSortPreference,
@@ -127,7 +128,15 @@ export default function HomePage() {
                   className="card-image"
                 />
               ) : (
-                <div className="card-placeholder">
+                <div
+                  className="card-placeholder"
+                  style={
+                    {
+                      '--card-gradient-start': getCardGradient(card).start,
+                      '--card-gradient-end': getCardGradient(card).end,
+                    } as React.CSSProperties
+                  }
+                >
                   <span>{card.name[0].toUpperCase()}</span>
                 </div>
               )}

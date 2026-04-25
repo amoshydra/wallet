@@ -4,6 +4,7 @@ import CodeDisplay from '../components/CodeDisplay';
 import { useAuth } from '../contexts/AuthContext';
 import { useMaskedNavigation } from '../contexts/NavigationContext';
 import type { Card, CodeType } from '../types/card';
+import { COLOR_PALETTE, CUSTOM_COLOR_INDEX, getDefaultColorIndex } from '../utils/colors';
 
 export default function AddCardPage() {
   const { addCard, updateCard, getCards } = useAuth();
@@ -17,6 +18,8 @@ export default function AddCardPage() {
   const [number, setNumber] = useState('');
   const [codeType, setCodeType] = useState<CodeType>('qr');
   const [imageData, setImageData] = useState<string | null>(null);
+  const [colorIndex, setColorIndex] = useState<number>(0);
+  const [customColor, setCustomColor] = useState<string | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -28,6 +31,8 @@ export default function AddCardPage() {
         setNumber(card.number || '');
         setCodeType(card.codeType || 'qr');
         setImageData(card.imageData || null);
+        setColorIndex(card.colorIndex ?? getDefaultColorIndex(card.name));
+        setCustomColor(card.customColor);
       }
     }
   }, [isEditing, cardId, getCards]);
@@ -43,33 +48,52 @@ export default function AddCardPage() {
     }
   };
 
+  const handleNameChange = (value: string) => {
+    setName(value);
+    if (!isEditing && value.trim()) {
+      setColorIndex(getDefaultColorIndex(value.trim()));
+      setCustomColor(undefined);
+    }
+  };
+
+  const handlePaletteSelect = (index: number) => {
+    setColorIndex(index);
+    setCustomColor(undefined);
+  };
+
+  const handleCustomColorChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setCustomColor(e.target.value);
+    setColorIndex(CUSTOM_COLOR_INDEX);
+  };
+
   const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     if (!name.trim() || !number.trim()) return;
 
     setIsSubmitting(true);
     try {
+      const cardData = {
+        name: name.trim(),
+        number: number.trim(),
+        codeType,
+        imageData: imageData || undefined,
+        colorIndex: customColor ? CUSTOM_COLOR_INDEX : colorIndex,
+        customColor,
+      };
+
       if (isEditing && cardId) {
-        await updateCard(cardId, {
-          name: name.trim(),
-          number: number.trim(),
-          codeType,
-          imageData: imageData || undefined,
-        });
+        await updateCard(cardId, cardData);
         navigate(`/card/${cardId}`);
       } else {
-        await addCard({
-          name: name.trim(),
-          number: number.trim(),
-          codeType,
-          imageData: imageData || undefined,
-        });
+        await addCard(cardData);
         navigate('/');
       }
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
   return (
     <div className="page">
@@ -100,7 +124,7 @@ export default function AddCardPage() {
             id="name"
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => handleNameChange(e.target.value)}
             placeholder="e.g., Starbucks Rewards"
             required
           />
@@ -148,6 +172,39 @@ export default function AddCardPage() {
               className="image-preview"
             />
           )}
+        </div>
+
+        <div className="form-group">
+          <label>Card Color</label>
+          <div className="color-palette">
+            {COLOR_PALETTE.map((color, index) => {
+              const gradient = isDark ? color.dark : color.light;
+              const isSelected = colorIndex === index && !customColor;
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  className={`color-swatch${isSelected ? ' selected' : ''}`}
+                  style={{
+                    background: `linear-gradient(135deg, ${gradient.start} 0%, ${gradient.end} 100%)`,
+                  }}
+                  onClick={() => handlePaletteSelect(index)}
+                  aria-label={color.name}
+                  title={color.name}
+                />
+              );
+            })}
+          </div>
+          <div className="color-custom">
+            <input
+              type="color"
+              value={customColor || COLOR_PALETTE[colorIndex]?.light.start || '#667eea'}
+              onChange={handleCustomColorChange}
+              className="color-picker"
+              aria-label="Custom color"
+            />
+            <span className="color-custom-label">Custom</span>
+          </div>
         </div>
 
         <div className="form-actions">
